@@ -88,4 +88,4 @@ def wall_network(wall, G_cd, Gw, Capacity, GLW, h, Gv, Kp):
                      [1, 2, 3, 0]])
     
     TCa = dm4bem.TCAss(TCd, AssX)
-return x
+    return A
