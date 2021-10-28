@@ -12,7 +12,7 @@ import pandas as pd
 
 # import excel file
 
-def BuildingCharacteristics():
+def building_characteristics():
     bc = pd.read_excel(r'Building Characteristics.xlsx')
     print(bc)
     return bc

@@ -8,12 +8,16 @@ Code which models the dynamic thermal transfer in a building.
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+
+import Weather
 import dm4bem
 import BuildingCharacteristics
 
 # Define building characteristics
 
-bc = BuildingCharacteristics.BuildingCharacteristics()
+bc = BuildingCharacteristics.building_characteristics()
 print(bc)
 
-# Define thermal properties
+# Define weather
+
+weather, meta = Weather.weather_input()
