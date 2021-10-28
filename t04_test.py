@@ -39,7 +39,7 @@ air = {'Density': 1.2,                      # kg/m³
 wall = {'Conductivity': [1.4, 0.027, 1.4],      # W/m.K
         'Density': [2300, 55, 2500],            # kg/m³
         'Specific heat': [880, 1210, 750],      # J/kg.K
-        'Width': [0.2, 0.08, 0.004],
+        'Width': [0.2, 0.08, 0.04],
         'Surface': [5 * l**2, 5 * l**2, l**2],  # m²
         'Meshes': [1, 1, 1]}                      # number of meshes
 wall = pd.DataFrame(wall, index=['Concrete', 'Insulation', 'Glass'])
@@ -104,8 +104,8 @@ Capacity['Air'] = air['Density'] * air['Specific heat'] * Va
 nq = 1 + 2 * (wall['Meshes']['Concrete'] + wall['Meshes']['Insulation'])
 nt = 1 + 2 * (wall['Meshes']['Concrete'] + wall['Meshes']['Insulation'])
 
-A = np.eye(nq + 1, nt)
-A = -np.diff(A, 1, 0).T
+A0 = np.eye(nq + 1, nt)
+A0 = -np.diff(A0, 1, 0).T
 
 nc = wall['Meshes']['Concrete']
 ni = wall['Meshes']['Insulation']
@@ -113,94 +113,99 @@ Gcm = 2 * nc * [G_cd['Concrete']]
 Gcm = 2 * nc * np.array(Gcm)
 Gim = 2 * ni * [G_cd['Insulation']]
 Gim = 2 * wall['Meshes']['Insulation'] * np.array(Gim)
-G = np.diag(np.hstack([Gw['out'], Gcm, Gim]))
+G0 = np.diag(np.hstack([Gw['out'], Gcm, Gim]))
 
 
-b = np.zeros(nq)
-b[0] = 1
+b0 = np.zeros(nq)
+b0[0] = 1
 
 Ccm = Capacity['Concrete'] / nc * np.mod(range(0, 2 * nc), 2)
 Cim = Capacity['Insulation'] / ni * np.mod(range(0, 2 * ni), 2)
-C = np.diag(np.hstack([Ccm, Cim, 0]))
+C0 = np.diag(np.hstack([Ccm, Cim, 0]))
 
-f = np.zeros(nt)
-f[0] = f[-1] = 1
+f0 = np.zeros(nt)
+f0[0] = f0[-1] = 1
 
-y = np.zeros(nt)
+y0 = np.zeros(nt)
 
-TCd0 = {'A': A, 'G': G, 'b': b, 'C': C, 'f': f, 'y': y}
+TCd0 = {'A': A0, 'G': G0, 'b': b0, 'C': C0, 'f': f0, 'y': y0}
 
 # TCd1: Indoor air (in blue)
-A = np.array([[-1, 0, 0, 0, 1],
-              [-1, 0, 0, 0, 1],
-              [-1, 0, 0, 0, 1],
-              [-1, 0, 0, 0, 1]])
-G = np.diag(np.hstack([Gg['in'], Gg['in'], Gg['in'], Gg['in']]))
-b = np.zeros(4)
-C = np.diag([0, 0, 0, Capacity['Air'] / 2])
-f = np.array([0, 0, 0, 1])
-y = np.array([0, 0, 0, 1])
-TCd1 = {'A': A, 'G': G, 'b': b, 'C': C, 'f': f, 'y': y}
+A1 = np.array([[-1, 0, 0, 0, 1],
+               [-1, 0, 0, 0, 1],
+               [-1, 0, 0, 0, 1],
+               [-1, 0, 0, 0, 1]])
+G1 = np.diag(np.hstack([Gg['in'], Gg['in'], Gg['in'], Gg['in']]))
+b1 = np.zeros(4)
+C1 = np.diag([0, 0, 0, 0, Capacity['Air'] / 2])
+f1 = np.array([0, 0, 0, 0, 1])
+y1 = np.array([0, 0, 0, 0, 1])
+TCd1 = {'A': A1, 'G': G1, 'b': b1, 'C': C1, 'f': f1, 'y': y1}
 
 # TCd2: Glass (in green)
-A = np.array([[1, 0],
-              [-1, 1]])
+A2 = np.array([[1, 0],
+               [-1, 1]])
 Ggo = h['out'] * wall['Surface']['Glass']
 Ggs = 1 / (1 / Ggo + 1 / (2 * G_cd['Glass']))
-G = np.diag(np.hstack([Ggs, 2 * G_cd['Glass']]))
-b = np.array([1, 0])
-C = np.diag([Capacity['Glass'], 0])
-f = np.array([1, 0])
-y = np.array([0, 0])
-TCd2 = {'A': A, 'G': G, 'b': b, 'C': C, 'f': f, 'y': y}
+G2 = np.diag(np.hstack([Ggs, 2 * G_cd['Glass']]))
+b2 = np.array([1, 0])
+C2 = np.diag([Capacity['Glass'], 0])
+f2 = np.array([1, 0])
+y2 = np.array([0, 0])
+TCd2 = {'A': A2, 'G': G2, 'b': b2, 'C': C2, 'f': f2, 'y': y2}
 
 # TCd3: air infiltration and controller (in purple)
-A = np.array([[1],
-              [1]])
-G = np.diag(np.hstack([Gv, Kp]))
-b = np.array([1, 1])
-C = np.array([Capacity['Air'] / 2])
-f = 1
-y = 1
-TCd3 = {'A': A, 'G': G, 'b': b, 'C': C, 'f': f, 'y': y}
+A3 = np.array([[1],
+               [1]])
+G3 = np.diag(np.hstack([Gv, Kp]))
+b3 = np.array([1, 1])
+C3 = np.array([Capacity['Air'] / 2])
+f3 = 1
+y3 = 1
+TCd3 = {'A': A3, 'G': G3, 'b': b3, 'C': C3, 'f': f3, 'y': y3}
 
 # TCd4: Roof (in grey)
-A = np.array([[-1, 0, 0],
-              [-1, 1, 0],
-              [0, -1, 0]])
-G = np.diag(np.hstack([Gw['out'], Gim]))
-b = np.array([1, 0, 0])
-C = np.diag([Cim, 0])
-f = np.array([1, 0, 1])
-y = np.array([0, 0, 0])
-TCd4 = {'A': A, 'G': G, 'b': b, 'C': C, 'f': f, 'y': y}
+A4 = np.array([[-1, 0, 0],
+               [-1, 1, 0],
+               [0, -1, 0]])
+G4 = np.diag(np.hstack([Gw['out'], Gim]))
+b4 = np.array([1, 0, 0])
+C4 = np.diag([0, Capacity['Insulation'], 0])
+f4 = np.array([1, 0, 1])
+y4 = np.array([0, 0, 0])
+TCd4 = {'A': A4, 'G': G4, 'b': b4, 'C': C4, 'f': f4, 'y': y4}
 
 # TCd5: Floor (in blue)
-A = np.array([[1, 0, 0, 0],
-              [-1, 1, 0, 0],
-              [0, -1, 1, 0]
-              [0, 0, -1, 1]])
-G = np.diag(np.hstack([Gw['in'], Gw['in'], G_cd['Concrete'], G_cd['Concrete']]))
-b = np.array([1, 0, 0, 0])
-C = np.diag([Capacity['Air'], 0, Capacity['Concrete'], 0])
-f = np.array([0, 0, 0, 1])
-y = np.array([0, 0, 0, 0])  
-TCd5 = {'A': A, 'G': G, 'b': b, 'C': C, 'f': f, 'y': y}
+A5 = np.array([[1, 0, 0, 0],
+               [-1, 1, 0, 0],
+               [0, -1, 1, 0],
+               [0, 0, -1, 1]])
+G5 = np.diag(np.hstack(
+    [Gw['in'], Gw['in'], G_cd['Concrete'], G_cd['Concrete']]))
+b5 = np.array([1, 0, 0, 0])
+C5 = np.diag([Capacity['Air'], 0, Capacity['Concrete'], 0])
+f5 = np.array([0, 0, 0, 1])
+y5 = np.array([0, 0, 0, 0])
+TCd5 = {'A': A5, 'G': G5, 'b': b5, 'C': C5, 'f': f5, 'y': y5}
 
 TCd = {'0': TCd0,
        '1': TCd1,
        '2': TCd2,
-       '3': TCd3
-       '4': TCd4
+       '3': TCd3,
+       '4': TCd4,
        '5': TCd5}
 
-AssX = [[TCd['0'], nt, TCd['1'], 0],
-        [TCd['1'], 1, TCd['2'], 1],
-        [TCd['1'], 2, TCd['3'], 0]]
+AssX = [[TCd['0'], 4, TCd['1'], 0],
+        [TCd['2'], 1, TCd['1'], 1],
+        [TCd['3'], 0, TCd['1'], 4],
+        [TCd['4'], 2, TCd['1'], 2],
+        [TCd['5'], 3, TCd['1'], 3]]
 
-AssX = np.array([[0, nt - 1, 1, 0],
-                 [1, 1, 2, 1],
-                 [1, 2, 3, 0]])
+AssX = np.array([[0, 4, 1, 0],
+                 [2, 1, 1, 1],
+                 [3, 0, 1, 4],
+                 [4, 2, 1, 2],
+                 [5, 3, 1, 3]])
 
 TCa = dm4bem.TCAss(TCd, AssX)
 
