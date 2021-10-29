@@ -13,6 +13,5 @@ import pandas as pd
 # import excel file
 
 def building_characteristics():
-    bc = pd.read_excel(r'Building Characteristics.xlsx')
-    print(bc)
+    bc = pd.read_csv(r'Building Characteristics.csv')
     return bc
