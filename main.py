@@ -12,11 +12,20 @@ import matplotlib.pyplot as plt
 import Weather
 import dm4bem
 import BuildingCharacteristics
+import thermophysicalprop
+
+# global constants
+σ = 5.67e-8     # W/m².K⁴ Stefan-Bolzmann constant
 
 # Define building characteristics
 
 bc = BuildingCharacteristics.building_characteristics()
 print(bc)
+
+# Add thermo-physical properties
+
+bcp = thermophysicalprop.thphprop(bc)
+print(bcp)
 
 # Define weather
 
