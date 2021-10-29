@@ -167,7 +167,7 @@ TCd3 = {'A': A3, 'G': G3, 'b': b3, 'C': C3, 'f': f3, 'y': y3}
 # TCd4: Roof (in grey)
 A4 = np.array([[-1, 0, 0],
                [-1, 1, 0],
-               [0, -1, 0]])
+               [0, -1, 1]])
 G4 = np.diag(np.hstack([Gw['out'], Gim]))
 b4 = np.array([1, 0, 0])
 C4 = np.diag([0, Capacity['Insulation'], 0])
@@ -230,7 +230,7 @@ t = np.arange(0, n * dt, dt)    # time
 # Vectors of state and input (in time)
 n_tC = As.shape[0]              # no of state variables (temps with capacity)
 # u = [To To To Tsp Phio Phii Qaux Phia]
-u = np.zeros([8, n])
+u = np.zeros([13, n])
 u[0:3, :] = np.ones([3, n])
 # initial values for temperatures obtained by explicit and implicit Euler
 temp_exp = np.zeros([n_tC, t.shape[0]])
@@ -287,10 +287,16 @@ data['Qa'] = 0 * np.ones(data.shape[0])
 t = dt * np.arange(data.shape[0])
 
 u = pd.concat([data['To'], data['To'], data['To'], data['Ti'],
-               α_wSW * wall['Surface']['Concrete'] * data['Φt1'],
-               τ_gSW * α_wSW * wall['Surface']['Glass'] * data['Φt1'],
-               data['Qa'],
-               α_gSW * wall['Surface']['Glass'] * data['Φt1']], axis=1)
+               data['To'],  data['To'],
+               α_wSW * wall['Surface']['Concrete'] * data['Φt1'], # outdoor wall rad
+               τ_gSW * α_wSW * wall['Surface']['Glass'] * data['Φt1'], #indoor wall rad
+               data['Qa'], #auxiliary sources
+               α_gSW * wall['Surface']['Glass'] * data['Φt1'], # outdoor glass rad
+               α_wSW * wall['Surface']['Concrete'] * data['Φt1'], # outdoor roof rad
+               τ_gSW * α_wSW * wall['Surface']['Glass'] * data['Φt1'],# indoor roof rad
+               τ_gSW * α_wSW * wall['Surface']['Glass'] * data['Φt1'] # indoor floor rad
+               ],
+               axis=1)
 
 # initial values for temperatures
 temp_exp = 20 * np.ones([As.shape[0], u.shape[0]])
