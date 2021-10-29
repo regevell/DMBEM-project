@@ -5,7 +5,8 @@ Created on Mi Oct 27  16:03:01 2021
 """
 import numpy as np
 import pandas as pd
-
+import BuildingCharacteristics
+bc = BuildingCharacteristics.building_characteristics()
 
 def thphprop(BCdf):
     """
@@ -38,63 +39,69 @@ def thphprop(BCdf):
             concrete (stone mix) p. 993
             insulation polystyrene extruded (R-12) p.990
             glass plate p.993
-            Clay tile, hollow p. 989
+            Clay tile, hollow p.989
+            Wood, oak p.989
             
         EngToolbox Emissivity Coefficient Materials, Glass, pyrex
         EngToolbox Emissivity Coefficient Materials, Clay
+        EngToolbox Emissivity Coefficient Materials, Wood Oak, planned
         EngToolbox Absorbed Solar Radiation by Surface Color, white smooth surface
         EngToolbox Optical properties of some typical glazing mat Window glass
         EngToolbox Absorbed Solar Radiation by Material, Tile, clay red
+        EngToolbox Absorbed Solar Radiation by Surface Color, Green, red and brown
         """
-    thphp = {'Density': [2300, 55, 2500, 1.2, '-'],          # kg/m³
-             'Specific_Heat': [880, 1210, 750, 1000, '-'],    # J/kg.K
-             'Conductivity': [1.4, 0.027, 1.4, '-', 0.52],       # W/m.K
-             'LW_Emissivity': [0.9, 0, 0.9, 0, 0.91],
-             'SW_Transmittance': [0, 0, 0.83, 1, 0],
-             'SW_Absorptivity': [0.25, 0.25, 0.1, 0, 0.64],
-             'Albedo': [0.75, 0.75, 0.07, 0, 0.36]}              # albedo + SW transmission + SW absorptivity = 1
+    thphp = {'Material': ['Concrete', 'Insulation', 'Glass', 'Air', 'Tile', 'Wood'],
+             'Density': [2300, 55, 2500, 1.2, None, 720],            # kg/m³
+             'Specific_Heat': [880, 1210, 750, 1000, None, 1255],    # J/kg.K
+             'Conductivity': [1.4, 0.027, 1.4, None, 0.52, 0.16],    # W/m.K
+             'LW_Emissivity': [0.9, 0, 0.9, 0, 0.91, 0.885],
+             'SW_Transmittance': [0, 0, 0.83, 1, 0, 0],
+             'SW_Absorptivity': [0.25, 0.25, 0.1, 0, 0.64, 0.6],
+             'Albedo': [0.75, 0.75, 0.07, 0, 0.36, 0.4]}             # albedo + SW transmission + SW absorptivity = 1
 
-    thphp = pd.DataFrame(thphp, index=['Concrete', 'Insulation', 'Glass', 'Air', 'Tiles'])
+    thphp = pd.DataFrame(thphp)
 
     # add empty columns for thermo-physical properties
-    BCdf.assign(columns=['density_1', 'specific_heat_1', 'conductivity_1', 'LW_emissivity_1', 'SW_transmittance_1',
-                         'SW_absorptivity_1', 'albedo_1', 'density_2', 'specific_heat_2', 'conductivity_2',
-                         'LW_emissivity_2', 'SW_transmittance_2', 'SW_absorptivity_2', 'albedo_2', 'density_3',
-                         'specific_heat_3', 'conductivity_3', 'LW_emissivity_3', 'SW_transmittance_3',
-                         'SW_absorptivity_3', 'albedo_3'])
-
+    BCdf = BCdf.reindex(columns=BCdf.columns.to_list() + ['density_1', 'specific_heat_1', 'conductivity_1',
+                                                          'LW_emissivity_1', 'SW_transmittance_1', 'SW_absorptivity_1',
+                                                          'albedo_1', 'density_2', 'specific_heat_2', 'conductivity_2',
+                                                          'LW_emissivity_2', 'SW_transmittance_2', 'SW_absorptivity_2',
+                                                          'albedo_2', 'density_3', 'specific_heat_3', 'conductivity_3',
+                                                          'LW_emissivity_3', 'SW_transmittance_3', 'SW_absorptivity_3',
+                                                          'albedo_3'])
+    print(BCdf)
     # fill columns with properties for the given materials 1-3 of each element
-    for i in BCdf['Material_1']:
-        for j in thphp[index]:
-            if BCdf.Material_1[i] == thphp.index[j]:
-                BCdf.loc[i] = pd.Series({'density_1': thphp.Density[j],
-                                         'specific_heat_1': thphp.Specific_Heat[j],
-                                         'conductivity_1': thphp.Conductivity[j],
-                                         'LW_emissivity_1': thphp.LW_Emissivity[j],
-                                         'SW_transmittance_1': thphp.SW_Transmittance[j],
-                                         'SW_absorptivity_1': thphp.SW_Absorptivity[j],
-                                         'albedo_1': thphp.Albedo[j]})
+    for i in range(0, len(BCdf['Material_1'])):
+        for j in range(0, len(thphp['Material'])):
+            if BCdf.Material_1[i] == thphp.Material[j]:
+                BCdf.density_1[i] = thphp.Density[j]
+                BCdf.specific_heat_1[i] = thphp.Specific_Heat[j]
+                BCdf.conductivity_1[i] = thphp.Conductivity[j]
+                BCdf.LW_emissivity_1[i] = thphp.LW_Emissivity[j]
+                BCdf.SW_transmittance_1[i] = thphp.SW_Transmittance[j]
+                BCdf.SW_absorptivity_1[i] = thphp.SW_Absorptivity[j]
+                BCdf.albedo_1[i] = thphp.Albedo[j]
 
-    for i in BCdf['Material_2']:
-        for j in thphp[index]:
-            if BCdf.Material_2[i] == thphp.index[j]:
-                BCdf.loc[i] = pd.Series({'density_2': thphp.Density[j],
-                                         'specific_heat_2': thphp.Specific_Heat[j],
-                                         'conductivity_2': thphp.Conductivity[j],
-                                         'LW_emissivity_2': thphp.LW_Emissivity[j],
-                                         'SW_transmittance_2': thphp.SW_Transmittance[j],
-                                         'SW_absorptivity_2': thphp.SW_Absorptivity[j],
-                                         'albedo_2': thphp.Albedo[j]})
+    for i in range(0, len(BCdf['Material_2'])):
+        for j in range(0, len(thphp['Material'])):
+            if BCdf.Material_2[i] == thphp.Material[j]:
+                BCdf.density_2[i] = thphp.Density[j]
+                BCdf.specific_heat_2[i] = thphp.Specific_Heat[j]
+                BCdf.conductivity_2[i] = thphp.Conductivity[j]
+                BCdf.LW_emissivity_2[i] = thphp.LW_Emissivity[j]
+                BCdf.SW_transmittance_2[i] = thphp.SW_Transmittance[j]
+                BCdf.SW_absorptivity_2[i] = thphp.SW_Absorptivity[j]
+                BCdf.albedo_2[i] = thphp.Albedo[j]
 
-    for i in BCdf['Material_3']:
-        for j in thphp[index]:
-            if BCdf.Material_3[i] == thphp.index[j]:
-                BCdf.loc[i] = pd.Series({'density_3': thphp.Density[j],
-                                         'specific_heat_3': thphp.Specific_Heat[j],
-                                         'conductivity_3': thphp.Conductivity[j],
-                                         'LW_emissivity_3': thphp.LW_Emissivity[j],
-                                         'SW_transmittance_3': thphp.SW_Transmittance[j],
-                                         'SW_absorptivity_3': thphp.SW_Absorptivity[j],
-                                         'albedo_3': thphp.Albedo[j]})
+    for i in range(0, len(BCdf['Material_3'])):
+        for j in range(0, len(thphp['Material'])):
+            if BCdf.Material_3[i] == thphp.Material[j]:
+                BCdf.density_3[i] = thphp.Density[j]
+                BCdf.specific_heat_3[i] = thphp.Specific_Heat[j]
+                BCdf.conductivity_3[i] = thphp.Conductivity[j]
+                BCdf.LW_emissivity_3[i] = thphp.LW_Emissivity[j]
+                BCdf.SW_transmittance_3[i] = thphp.SW_Transmittance[j]
+                BCdf.SW_absorptivity_3[i] = thphp.SW_Absorptivity[j]
+                BCdf.albedo_3[i] = thphp.Albedo[j]
 
     return BCdf
