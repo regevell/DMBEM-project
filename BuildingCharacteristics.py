@@ -13,5 +13,5 @@ import pandas as pd
 # import excel file
 
 def building_characteristics():
-    bc = pd.read_csv(r'Building Characteristics.csv')
+    bc = pd.read_csv(r'Building Characteristics.csv', na_values=["N"], keep_default_na=True)
     return bc

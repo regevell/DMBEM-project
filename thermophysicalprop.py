@@ -57,16 +57,16 @@ def thphprop(BCdf):
              'LW_Emissivity': [0.9, 0, 0.9, 0, 0.91, 0.885],
              'SW_Transmittance': [0, 0, 0.83, 1, 0, 0],
              'SW_Absorptivity': [0.25, 0.25, 0.1, 0, 0.64, 0.6],
-             'Albedo': [0.75, 0.75, 0.07, 0, 0.36, 0.4]}             # albedo + SW transmission + SW absorptivity = 1
+             'Albedo': [0.75, 0.75, 0.07, 0, 0.36, 0.4],}            # albedo + SW transmission + SW absorptivity = 1
 
     thphp = pd.DataFrame(thphp)
 
     # add empty columns for thermo-physical properties
     BCdf = BCdf.reindex(columns=BCdf.columns.to_list() + ['density_1', 'specific_heat_1', 'conductivity_1',
                                                           'LW_emissivity_1', 'SW_transmittance_1', 'SW_absorptivity_1',
-                                                          'albedo_1', 'density_2', 'specific_heat_2', 'conductivity_2',
+                                                          'albedo_1', 'mesh_1', 'density_2', 'specific_heat_2', 'conductivity_2',
                                                           'LW_emissivity_2', 'SW_transmittance_2', 'SW_absorptivity_2',
-                                                          'albedo_2', 'density_3', 'specific_heat_3', 'conductivity_3',
+                                                          'albedo_2', 'mesh_2', 'density_3', 'specific_heat_3', 'conductivity_3',
                                                           'LW_emissivity_3', 'SW_transmittance_3', 'SW_absorptivity_3',
                                                           'albedo_3'])
     print(BCdf)
