@@ -15,9 +15,9 @@ import dm4bem
 # ===============
 
 # Parameters
-Kp = 1e4    # # P-controler gain, Kp -> ∞
-Kp = 1e-3           # no controller Kp -> 0
-Kp = 500
+Kp = 1e3    # # P-controler gain, Kp -> ∞
+# Kp = 1e-3           # no controller Kp -> 0
+# Kp = 500
 dt = 5      # s simulation time step
 
 # Geometry
@@ -207,6 +207,12 @@ AssX = np.array([[0, 4, 1, 0],
                  [4, 2, 1, 2],
                  [5, 3, 1, 3]])
 
+AssX = np.array([[0, 4, 1, 0],
+                 [2, 1, 1, 1],
+                 [3, 0, 1, 4],
+                 [4, 2, 1, 2],
+                 [5, 3, 1, 3]])
+
 TCa = dm4bem.TCAss(TCd, AssX)
 
 # Thermal circuit -> state-space
@@ -221,7 +227,7 @@ print(f'Maximum time step: {dtmax:.2f} s')
 
 # Step response
 # -------------
-duration = 3600 * 24 * 1        # [s]
+duration = 3600 * 24 * 7        # [s]
 # number of steps
 n = int(np.floor(duration / dt))
 

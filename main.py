@@ -14,6 +14,7 @@ import dm4bem
 import BuildingCharacteristics
 import thermophysicalprop
 import solid_wall_w_ins
+# import Assembly
 
 # global constants
 σ = 5.67e-8     # W/m².K⁴ Stefan-Bolzmann constant
@@ -38,18 +39,19 @@ bcp = thermophysicalprop.thphprop(bc)
 
 # Thermal Circuits
 TCd = {}
-
-for i in range(0, len(bcp)):
+TCd.update({str(0): indoor_air(bcp.Surface, h)})  #inside air
+TCd.update({str(1): ventilation_heating(bcp.Surface, h)})  #ventilation and heating
+for i in range(2, len(bcp)+2):
     if bcp.Element_Type[i] == 'Solid Wall w/In':
-        TCd.update({'TCd'+str(i): solid_wall_w_ins.solid_wall_w_ins(bcp.loc[i, :], h)})
+        TCd.update({str(i): solid_wall_w_ins.solid_wall_w_ins(bcp.loc[i, :], h)})
     # elif bcp.Element_Type[i] == 'DG':
-    #     TCd.update({'TCd'+str(i): DG(bcp.loc[i, :], h)})
+    #     TCd.update({str(i): DG(bcp.loc[i, :], h)})
     # elif bcp.Element_Type[i] == 'Suspended Floor':
-    #     TCd.update({'TCd'+str(i): susp_floor(bcp.loc[i, :], h)})
+    #     TCd.update({str(i): susp_floor(bcp.loc[i, :], h)})
     # elif bcp.Element_Type[i] == 'Flat Roof 1/In':
-    #     TCd.update({'TCd'+str(i): flat_roof_w_in(bcp.loc[i, :], h)})
+    #     TCd.update({str(i): flat_roof_w_in(bcp.loc[i, :], h)})
 
-print(TCd)
+TCd = pd.DataFrame(TCd)
 # Define weather
 
 weather, meta = Weather.weather_input()
