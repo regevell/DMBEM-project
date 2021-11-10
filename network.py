@@ -59,7 +59,7 @@ def weather_data():
 
     # Solar radiation on a tilted surface East
     surface_orientationE = {'slope': 90,
-                            'azimuth': 0,
+                            'azimuth': 270,
                             'latitude': 45}
     albedo = 0.2
     rad_surfE = dm4bem.sol_rad_tilt_surf(weather, surface_orientationE, albedo)
@@ -67,7 +67,7 @@ def weather_data():
 
     # Solar radiation on a tilted surface West
     surface_orientationW = {'slope': 90,
-                            'azimuth': 0,
+                            'azimuth': 90,
                             'latitude': 45}
     albedo = 0.2
     rad_surfW = dm4bem.sol_rad_tilt_surf(weather, surface_orientationW, albedo)
@@ -82,8 +82,8 @@ def weather_data():
     rad_surfR1['Φt1'] = rad_surfR1.sum(axis=1)
    
     # Solar radiation on a tilted surface roof 2
-    surface_orientationR2 = {'slope': 90,
-                             'azimuth': 0,
+    surface_orientationR2 = {'slope': 45,
+                             'azimuth': 180,
                              'latitude': 45}
     albedo = 0.2
     rad_surfR2 = dm4bem.sol_rad_tilt_surf(weather, surface_orientationR2, albedo)
