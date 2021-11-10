@@ -36,7 +36,7 @@ def solid_wall_w_ins(bcp_r, h):
     Gcm = 2 * nc * G_cd_cm
     Gcm = 2 * nc * np.array(Gcm)
     Gim = 2 * ni * G_cd_in
-    Gim = 2 * int(bcp_r['Mesh_2']) * np.array(Gim)
+    Gim = 2 * ni * np.array(Gim)
     G = np.diag(np.hstack([Gw['out'], Gcm, Gim]))
 
     b = np.zeros(nq)

@@ -14,15 +14,22 @@ import numpy as np
 
 
 def indoor_air(bcp_sur, h, V):
+    """
+    Input:
+    bcp_sur, surface column of bcp dataframe
+    h, convection dataframe
+    V, Volume of the room (from bcp)
+    Output: TCd, a dictionary of the all the matrices of the thermal circuit of the inside air
+    """
     nt = len(bcp_sur) + 1
     nq = len(bcp_sur)
 
-    A = np.zeros((nq, nt))
-    A[:, 0] = -1
-    A[:, -1] = 1
+    nq_ones = np.ones(nq)
+    A = np.diag(-nq_ones)
+    A = np.c_[nq_ones, A]
 
     G = np.zeros(nq)
-    for i in range(G):
+    for i in range(0, len(G)):
         G[i] = h['in'] * bcp_sur[i]
     G = np.diag(G)
     b = np.zeros(nq)
