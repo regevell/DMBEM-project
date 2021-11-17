@@ -5,10 +5,8 @@ Created on We Nov 10 2021
 
 File with all the functions
 """
-
 import numpy as np
 import pandas as pd
-
 def building_characteristics():
 
     """
