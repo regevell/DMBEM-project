@@ -69,39 +69,41 @@ def thphprop(BCdf):
                                                           'albedo_2', 'density_3', 'specific_heat_3', 'conductivity_3',
                                                           'LW_emissivity_3', 'SW_transmittance_3', 'SW_absorptivity_3',
                                                           'albedo_3'])
-    print(BCdf)
+    
     # fill columns with properties for the given materials 1-3 of each element
     for i in range(0, len(BCdf['Material_1'])):
         for j in range(0, len(thphp['Material'])):
-            if BCdf.Material_1[i] == thphp.Material[j]:
-                BCdf.density_1[i] = thphp.Density[j]
-                BCdf.specific_heat_1[i] = thphp.Specific_Heat[j]
-                BCdf.conductivity_1[i] = thphp.Conductivity[j]
-                BCdf.LW_emissivity_1[i] = thphp.LW_Emissivity[j]
-                BCdf.SW_transmittance_1[i] = thphp.SW_Transmittance[j]
-                BCdf.SW_absorptivity_1[i] = thphp.SW_Absorptivity[j]
-                BCdf.albedo_1[i] = thphp.Albedo[j]
+            if BCdf.loc[i, 'Material_1'] == thphp.Material[j]:
+                BCdf.loc[i, 'density_1'] = thphp.Density[j]
+                BCdf.loc[i, 'specific_heat_1'] = thphp.Specific_Heat[j]
+                BCdf.loc[i, 'conductivity_1'] = thphp.Conductivity[j]
+                BCdf.loc[i, 'LW_emissivity_1'] = thphp.LW_Emissivity[j]
+                BCdf.loc[i, 'SW_transmittance_1'] = thphp.SW_Transmittance[j]
+                BCdf.loc[i, 'SW_absorptivity_1'] = thphp.SW_Absorptivity[j]
+                BCdf.loc[i, 'albedo_1'] = thphp.Albedo[j]
 
     for i in range(0, len(BCdf['Material_2'])):
         for j in range(0, len(thphp['Material'])):
-            if BCdf.Material_2[i] == thphp.Material[j]:
-                BCdf.density_2[i] = thphp.Density[j]
-                BCdf.specific_heat_2[i] = thphp.Specific_Heat[j]
-                BCdf.conductivity_2[i] = thphp.Conductivity[j]
-                BCdf.LW_emissivity_2[i] = thphp.LW_Emissivity[j]
-                BCdf.SW_transmittance_2[i] = thphp.SW_Transmittance[j]
-                BCdf.SW_absorptivity_2[i] = thphp.SW_Absorptivity[j]
-                BCdf.albedo_2[i] = thphp.Albedo[j]
+            if BCdf.loc[i,'Material_2'] == thphp.Material[j]:
+                BCdf.loc[i,'density_2'] = thphp.Density[j]
+                BCdf.loc[i,'specific_heat_2'] = thphp.Specific_Heat[j]
+                BCdf.loc[i,'conductivity_2'] = thphp.Conductivity[j]
+                BCdf.loc[i,'LW_emissivity_2'] = thphp.LW_Emissivity[j]
+                BCdf.loc[i,'SW_transmittance_2'] = thphp.SW_Transmittance[j]
+                BCdf.loc[i,'SW_absorptivity_2'] = thphp.SW_Absorptivity[j]
+                BCdf.loc[i,'albedo_2'] = thphp.Albedo[j]
 
     for i in range(0, len(BCdf['Material_3'])):
         for j in range(0, len(thphp['Material'])):
-            if BCdf.Material_3[i] == thphp.Material[j]:
-                BCdf.density_3[i] = thphp.Density[j]
-                BCdf.specific_heat_3[i] = thphp.Specific_Heat[j]
-                BCdf.conductivity_3[i] = thphp.Conductivity[j]
-                BCdf.LW_emissivity_3[i] = thphp.LW_Emissivity[j]
-                BCdf.SW_transmittance_3[i] = thphp.SW_Transmittance[j]
-                BCdf.SW_absorptivity_3[i] = thphp.SW_Absorptivity[j]
-                BCdf.albedo_3[i] = thphp.Albedo[j]
+            if BCdf.loc[i,'Material_3'] == thphp.Material[j]:
+                BCdf.loc[i,'density_3'] = thphp.Density[j]
+                BCdf.loc[i,'specific_heat_3'] = thphp.Specific_Heat[j]
+                BCdf.loc[i,'conductivity_3'] = thphp.Conductivity[j]
+                BCdf.loc[i,'LW_emissivity_3'] = thphp.LW_Emissivity[j]
+                BCdf.loc[i,'SW_transmittance_3'] = thphp.SW_Transmittance[j]
+                BCdf.loc[i,'SW_absorptivity_3'] = thphp.SW_Absorptivity[j]
+                BCdf.loc[i,'albedo_3'] = thphp.Albedo[j]
+
+    return BCdf
 
     return BCdf

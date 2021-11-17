@@ -4,19 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9e247da4-e2ca-49b4-b692-ba465640d2f0" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/DG.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/element_functions.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/flat_roof_w_in.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/susp_floor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_10_11_2021_09_51__Changes_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_10_11_2021_09_51__Changes_.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_10_11_2021_09_55__Changes_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_10_11_2021_09_55__Changes_.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_rebase__Changes_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_rebase__Changes_.xml" afterDir="false" />
+    <list default="true" id="9e247da4-e2ca-49b4-b692-ba465640d2f0" name="Changes" comment="All element functions and updated main, element functions are now all in one file.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/BuildingCharacteristics.py" beforeDir="false" afterPath="$PROJECT_DIR$/BuildingCharacteristics.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/indoor_air.py" beforeDir="false" afterPath="$PROJECT_DIR$/indoor_air.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/solid_wall_w_ins.py" beforeDir="false" afterPath="$PROJECT_DIR$/solid_wall_w_ins.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DMBEM_code_structure.pptx" beforeDir="false" afterPath="$PROJECT_DIR$/DMBEM_code_structure.pptx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Project.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Project.ipynb" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -34,12 +25,9 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="file://$PROJECT_DIR$/ventilation.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/t04.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/main.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/t04_test.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/indoor_air.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/solid_wall_w_ins.py" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="ProjectId" id="20AzDwDBgbhO4eAOTdDkNprYoyo" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
@@ -135,6 +123,14 @@
       <option name="presentableId" value="Default" />
       <updated>1635502067704</updated>
     </task>
+    <task id="LOCAL-00001" summary="All element functions and updated main, element functions are now all in one file.">
+      <created>1636551373553</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1636551373553</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -148,6 +144,10 @@
       </map>
     </option>
     <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="All element functions and updated main, element functions are now all in one file." />
+    <option name="LAST_COMMIT_MESSAGE" value="All element functions and updated main, element functions are now all in one file." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
