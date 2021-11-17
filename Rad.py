@@ -10,12 +10,16 @@ Created on Wed Oct 27 15:19:32 2021
 # Dissembled circuits
 
 import numpy as np
+import pandas as pd
+
 import dm4bem
 
-def rad(bcp):
+
+def rad(bcp, albedo_sur, latitude):
+
     # Simulation with weather data
     # ----------------------------
-    filename = 'FRA_Lyon.074810_IWEC.epw'
+    filename = 'GBR_ENG_RAF.Lyneham.037400_TMYx.2004-2018.epw'
     start_date = '2000-01-03 12:00:00'
     end_date = '2000-01-04 18:00:00'
 
@@ -27,16 +31,14 @@ def rad(bcp):
     weather = weather[(weather.index >= start_date) & (
         weather.index < end_date)]
     # Solar radiation on a tilted surface South
-    for k in range bcp...
-        surface_orientationS = {'slope': bcp...,
-                                'azimuth': bcp...,
-                                'latitude': 45}
-        albedo = bcp...
-        rad_surf = dm4bem.sol_rad_tilt_surf(weather, surface_orientationS, albedo)
-        rad_surf['Φt1'] = rad_surf.sum(axis=1)
+    Φt = {}
+    for k in range(0, len(bcp)):
+        surface_orientationS = {'slope': bcp.loc[k, 'Slope'],
+                                'azimuth': bcp.loc[k, 'Azimuth'],
+                                'latitude': latitude}
+        rad_surf = dm4bem.sol_rad_tilt_surf(weather, surface_orientationS, albedo_sur)
+        Φt.update({str(k+2): rad_surf.sum(axis=1)})
 
+    Φt = pd.DataFrame(Φt)
 
-    return weather, rad_surfS, rad_surfN, rad_surfE, rad_surfW, rad_surfR1, rad_surfR2
-
-
-Wdata, radS, radN, radE, radW, radR1, radR2 = weather_data()
+    return Φt

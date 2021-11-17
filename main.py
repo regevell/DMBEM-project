@@ -25,6 +25,8 @@ ACH = 1  # h*-1 - no. of air changes in volume per hour
 h = pd.DataFrame([{'in': 4., 'out': 10}])  # W/m² K - convection coefficients
 V = bc.Volume[4]
 Vdot = V * ACH / 3600  # m3/s - volume flow rate due to air changes
+albedo_sur = 0.2  # albedo for the surroundings
+latitude = 45
 
 # Add thermo-physical properties
 bcp = TCM_funcs.thphprop(bc)
@@ -45,3 +47,4 @@ for i in range(0, len(bcp)):
 
 TCd = pd.DataFrame(TCd)
 
+rad_surf_tot = TCM_funcs.rad(bcp, albedo_sur, latitude)

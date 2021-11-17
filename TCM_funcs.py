@@ -5,8 +5,10 @@ Created on We Nov 10 2021
 
 File with all the functions
 """
+
 import numpy as np
 import pandas as pd
+
 def building_characteristics():
 
     """
@@ -73,7 +75,7 @@ def thphprop(BCdf):
     thphp = pd.DataFrame(thphp)
 
     # add empty columns for thermo-physical properties
-    BCdf = BCdf.reindex(columns=BCdf.columns.to_list() + ['density_1', 'specific_heat_1', 'conductivity_1',
+    BCdf = BCdf.reindex(columns=BCdf.columns.to_list() + ['rad_s', 'density_1', 'specific_heat_1', 'conductivity_1',
                                                           'LW_emissivity_1', 'SW_transmittance_1', 'SW_absorptivity_1',
                                                           'albedo_1', 'density_2', 'specific_heat_2', 'conductivity_2',
                                                           'LW_emissivity_2', 'SW_transmittance_2', 'SW_absorptivity_2',
@@ -81,8 +83,9 @@ def thphprop(BCdf):
                                                           'LW_emissivity_3', 'SW_transmittance_3', 'SW_absorptivity_3',
                                                           'albedo_3'])
 
+
     # fill columns with properties for the given materials 1-3 of each element
-    for i in range(0, len(BCdf['Material_1'])):
+    for i in range(0, len(BCdf)):
         for j in range(0, len(thphp['Material'])):
             if BCdf.loc[i, 'Material_1'] == thphp.Material[j]:
                 BCdf.loc[i, 'density_1'] = thphp.Density[j]
@@ -93,7 +96,6 @@ def thphprop(BCdf):
                 BCdf.loc[i, 'SW_absorptivity_1'] = thphp.SW_Absorptivity[j]
                 BCdf.loc[i, 'albedo_1'] = thphp.Albedo[j]
 
-    for i in range(0, len(BCdf['Material_2'])):
         for j in range(0, len(thphp['Material'])):
             if BCdf.loc[i, 'Material_2'] == thphp.Material[j]:
                 BCdf.loc[i, 'density_2'] = thphp.Density[j]
@@ -104,7 +106,6 @@ def thphprop(BCdf):
                 BCdf.loc[i, 'SW_absorptivity_2'] = thphp.SW_Absorptivity[j]
                 BCdf.loc[i, 'albedo_2'] = thphp.Albedo[j]
 
-    for i in range(0, len(BCdf['Material_3'])):
         for j in range(0, len(thphp['Material'])):
             if BCdf.loc[i, 'Material_3'] == thphp.Material[j]:
                 BCdf.loc[i, 'density_3'] = thphp.Density[j]
@@ -295,3 +296,36 @@ def flat_roof_w_in(bcp_r, h):
     TCd = {'A': A, 'G': G, 'b': b, 'C': C, 'f': f, 'y': y}
 
     return TCd
+
+
+def rad(bcp, albedo_sur, latitude):
+    """
+    Created on Wed Oct 27 15:19:32 2021
+
+    @author: ellio
+    """
+    # Simulation with weather data
+    # ----------------------------
+    filename = 'GBR_ENG_RAF.Lyneham.037400_TMYx.2004-2018.epw'
+    start_date = '2000-01-03 12:00:00'
+    end_date = '2000-01-04 18:00:00'
+
+    # Read weather data from Energyplus .epw file
+    [data, meta] = dm4bem.read_epw(filename, coerce_year=None)
+    weather = data[["temp_air", "dir_n_rad", "dif_h_rad"]]
+    del data
+    weather.index = weather.index.map(lambda t: t.replace(year=2000))
+    weather = weather[(weather.index >= start_date) & (
+        weather.index < end_date)]
+    # Solar radiation on a tilted surface South
+    Φt = {}
+    for k in range(0, len(bcp)):
+        surface_orientationS = {'slope': bcp.loc[k, 'Slope'],
+                                'azimuth': bcp.loc[k, 'Azimuth'],
+                                'latitude': latitude}
+        rad_surf = dm4bem.sol_rad_tilt_surf(weather, surface_orientationS, albedo_sur)
+        Φt.update({str(k+2): rad_surf.sum(axis=1)})
+
+    Φt = pd.DataFrame(Φt)
+
+    return Φt
