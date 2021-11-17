@@ -6,8 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="9e247da4-e2ca-49b4-b692-ba465640d2f0" name="Changes" comment="All element functions and updated main, element functions are now all in one file.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DMBEM_code_structure.pptx" beforeDir="false" afterPath="$PROJECT_DIR$/DMBEM_code_structure.pptx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Project.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Project.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/element_functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/element_functions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/thermophysicalprop.py" beforeDir="false" afterPath="$PROJECT_DIR$/thermophysicalprop.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
