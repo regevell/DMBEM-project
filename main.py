@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import TCM_funcs
+import dm4bem
 
 # global constants
 σ = 5.67e-8     # W/m².K⁴ Stefan-Bolzmann constant
