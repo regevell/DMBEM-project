@@ -17,15 +17,15 @@ import TCM_funcs
 bc = TCM_funcs.building_characteristics()
 
 # Define Inputs
-Kp = 1e4  # factor for HVAC
-dt = 5  # s - time step for solver
+Kp = 1e4                                                                      # factor for HVAC
+dt = 5                                                                        # s - time step for solver
 T_set = pd.DataFrame([{'cooling': (26 + 273.15), 'heating': (22 + 273.15)}])  # K - temperature set points
-Tm = 20 + 273.15  # K - Mean temperature for radiative exchange
-ACH = 1  # h*-1 - no. of air changes in volume per hour
-h = pd.DataFrame([{'in': 4., 'out': 10}])  # W/m² K - convection coefficients
-V = bc.Volume[4]
-Vdot = V * ACH / 3600  # m3/s - volume flow rate due to air changes
-albedo_sur = 0.2  # albedo for the surroundings
+Tm = 20 + 273.15                                                              # K - Mean temperature for radiative exchange
+ACH = 1                                                                       # h*-1 - no. of air changes in volume per hour
+h = pd.DataFrame([{'in': 4., 'out': 10}])                                     # W/m² K - convection coefficients
+V = bc.Volume[4]                                                              # m³
+Vdot = V * ACH / 3600                                                         # m³/s - volume flow rate due to air changes
+albedo_sur = 0.2                                                              # albedo for the surroundings
 latitude = 45
 
 # Add thermo-physical properties
