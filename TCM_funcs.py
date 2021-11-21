@@ -119,8 +119,7 @@ def thphprop(BCdf):
 
     return BCdf
 
-
-def indoor_air(bcp_sur, h, V):
+def indoor_air(bcp_sur, h, V, Qa, rad_surf_tot):
     """
     Input:
     bcp_sur, surface column of bcp dataframe
@@ -147,12 +146,18 @@ def indoor_air(bcp_sur, h, V):
     f[-1] = 1
     y = np.zeros(nt)
     y[-1] = 1
-    TCd = {'A': A, 'G': G, 'b': b, 'C': C, 'f': f, 'y': y}
+    Q = np.zeros((rad_surf_tot.shape[0], nt))
+    Q[0] = Qa
+    Q[:, 1:nt] = 'NaN'
+    T = np.zeros((rad_surf_tot.shape[0], nq))
+    T[:, 0:nq] = 'NaN'
+
+    TCd = {'A': A, 'G': G, 'b': b, 'C': C, 'f': f, 'y': y, 'Q': Q, 'T': T}
 
     return TCd
 
 
-def ventilation(V, V_dot, Kp):
+def ventilation(V, V_dot, Kp, T_set, rad_surf_tot):
     """
     Input:
     V, Volume of the room (from bcp)
@@ -169,13 +174,18 @@ def ventilation(V, V_dot, Kp):
     C = np.array((1.2 * 1000 * V) / 2)
     f = 1
     y = 1
+    Q = np.zeros((rad_surf_tot.shape[0], 1))
+    Q[:, :] = 'NaN'
+    T = np.zeros((rad_surf_tot.shape[0], 2))
+    T[:, 0] = rad_surf_tot['To']
+    T[:, 1] = T_set['heating']
 
-    TCd = {'A': A, 'G': G, 'b': b, 'C': C, 'f': f, 'y': y}
+    TCd = {'A': A, 'G': G, 'b': b, 'C': C, 'f': f, 'y': y, 'Q': Q, 'T': T}
 
     return TCd
 
 
-def solid_wall_w_ins(bcp_r, h):
+def solid_wall_w_ins(bcp_r, h, rad_surf_tot, uc):
     """Input:
     bcp_r, one row of the bcp dataframe
     h, convection dataframe
@@ -221,17 +231,30 @@ def solid_wall_w_ins(bcp_r, h):
 
     y = np.zeros(nt)
 
-    TCd = {'A': A, 'G': G, 'b': b, 'C': C, 'f': f, 'y': y}
+    Q = np.zeros((rad_surf_tot.shape[0], nt))
+    Q[:, 0] = bcp_r['SW_absorptivity_1'] * bcp_r['Surface'] * rad_surf_tot[str(uc)]
+    Q[:, (nt-1)] = -1
+    uca = uc+1
+    Q[:, 1:(nt - 1)] = 'NaN'
 
-    return TCd
+    T = np.zeros((rad_surf_tot.shape[0], nq))
+    T[:, 0] = rad_surf_tot['To']
+    T[:, 1:nq] = 'NaN'
+
+    TCd = {'A': A, 'G': G, 'b': b, 'C': C, 'f': f, 'y': y, 'Q': Q, 'T': T}
+
+    return TCd, uca
 
 
-def window(bcp_r, h):
+def window(bcp_r, h, rad_surf_tot, uc):
     """Input:
     bcp_r, one row of the bcp dataframe
     h, convection dataframe
     Output: TCd, a dictionary of the all the matrices of one thermal circuit describing a solid wall with insulation
     """
+    nq = 2 * (int(bcp_r['Mesh_1']))
+    nt = 2 * (int(bcp_r['Mesh_1']))
+
     A = np.array([[1, 0],
                   [-1, 1]])
     Ggo = h['out'] * bcp_r['Surface']
@@ -241,18 +264,33 @@ def window(bcp_r, h):
     C = np.diag([bcp_r['density_1'] * bcp_r['specific_heat_1'] * bcp_r['Surface'] * bcp_r['Thickness_1'], 0])
     f = np.array([1, 0])
     y = np.array([0, 0])
-    TCd = {'A': A, 'G': G, 'b': b, 'C': C, 'f': f, 'y': y}
 
-    return TCd
+    Q = np.zeros((rad_surf_tot.shape[0], nt))
+    IG_surface = bcp_r['Surface'] * rad_surf_tot[str(uc)]
+    IGR = bcp_r['SW_transmittance_1'] * bcp_r['Surface'] * rad_surf_tot[str(uc)]
+    Q[:, 0] = bcp_r['SW_absorptivity_1'] * IG_surface
+    uca = uc + 1
+    Q[:, 1:nt] = 'NaN'
+
+    T = np.zeros((rad_surf_tot.shape[0], nq))
+    T[:, 0] = rad_surf_tot['To']
+    T[:, 1:nq] = 'NaN'
+
+    TCd = {'A': A, 'G': G, 'b': b, 'C': C, 'f': f, 'y': y, 'Q': Q, 'T': T}
+
+    return TCd, uca, IGR
 
 
-def susp_floor(bcp_r, h, V):
+def susp_floor(bcp_r, h, V, rad_surf_tot, uc):
     """Input:
     bcp_r, one row of the bcp dataframe
     h, convection dataframe
     V, Volume of the room from bcp
     Output: TCd, a dictionary of the all the matrices of one thermal circuit describing a suspended floor
     """
+    nq = 2 * (int(bcp_r['Mesh_1']) + int(bcp_r['Mesh_2']))
+    nt = 2 * (int(bcp_r['Mesh_1']) + int(bcp_r['Mesh_2']))
+
     A = np.array([[1, 0, 0, 0],
                   [-1, 1, 0, 0],
                   [0, -1, 1, 0],
@@ -268,17 +306,30 @@ def susp_floor(bcp_r, h, V):
     f = np.array([0, 0, 0, 1])
     y = np.array([0, 0, 0, 0])
 
-    TCd = {'A': A, 'G': G, 'b': b, 'C': C, 'f': f, 'y': y}
+    Q = np.zeros((rad_surf_tot.shape[0], nt))
+    Q[:, 0] = bcp_r['SW_absorptivity_1'] * bcp_r['Surface'] * rad_surf_tot[str(uc)]
+    Q[:, (nt - 1)] = -1
+    uca = uc + 1
+    Q[:, 1:(nt - 1)] = 'NaN'
 
-    return TCd
+    T = np.zeros((rad_surf_tot.shape[0], nq))
+    T[:, 0] = rad_surf_tot['To']
+    T[:, 1:nq] = 'NaN'
+
+    TCd = {'A': A, 'G': G, 'b': b, 'C': C, 'f': f, 'y': y, 'Q': Q, 'T': T}
+
+    return TCd, uca
 
 
-def flat_roof_w_in(bcp_r, h):
+def flat_roof_w_in(bcp_r, h, rad_surf_tot, uc):
     """Input:
     bcp_r, one row of the bcp dataframe
     h, convection dataframe
     Output: TCd, a dictionary of the all the matrices of one thermal circuit describing a flat roof with insulation
     """
+    nq = 2 * (int(bcp_r['Mesh_1']))
+    nt = 2 * (int(bcp_r['Mesh_1']))
+
     A = np.array([[-1, 0, 0],
                    [-1, 1, 0],
                    [0, -1, 1]])
@@ -294,12 +345,22 @@ def flat_roof_w_in(bcp_r, h):
     f = np.array([1, 0, 1])
     y = np.array([0, 0, 0])
 
-    TCd = {'A': A, 'G': G, 'b': b, 'C': C, 'f': f, 'y': y}
+    Q = np.zeros((rad_surf_tot.shape[0], nt))
+    Q[:, 0] = bcp_r['SW_absorptivity_1'] * bcp_r['Surface'] * rad_surf_tot[str(uc)]
+    Q[:, (nt - 1)] = -1
+    uca = uc + 1
+    Q[:, 1:(nt - 1)] = 'NaN'
 
-    return TCd
+    T = np.zeros((rad_surf_tot.shape[0], nq))
+    T[:, 0] = rad_surf_tot['To']
+    T[:, 1:nq] = 'NaN'
+
+    TCd = {'A': A, 'G': G, 'b': b, 'C': C, 'f': f, 'y': y, 'Q': Q, 'T': T}
+
+    return TCd, uca
 
 
-def rad(bcp, albedo_sur, latitude):
+def rad(bcp, albedo_sur, latitude, dt):
     """
     Created on Wed Oct 27 15:19:32 2021
 
@@ -328,5 +389,52 @@ def rad(bcp, albedo_sur, latitude):
         Φt.update({str(k+2): rad_surf.sum(axis=1)})
 
     Φt = pd.DataFrame(Φt)
+    # Interpolate weather data for time step dt
+    data = pd.concat([weather['temp_air'], Φt], axis=1)
+    data = data.resample(str(dt) + 'S').interpolate(method='linear')
+    data = data.rename(columns={'temp_air': 'To'})
 
-    return Φt
+    return data
+
+def indoor_rad(bcp_r, TCd, IG):
+    Q = TCd['Q']
+    lim = np.shape(Q)[1]
+    for i in range(0, lim):
+        if Q[0, i] == -1:
+            if np.isnan(bcp_r['SW_absorptivity_3']):
+                if np.isnan(bcp_r['SW_absorptivity_2']):
+                    Q[:, i] = bcp_r['SW_absorptivity_1'] * IG
+                else:
+                    Q[:, i] = bcp_r['SW_absorptivity_2'] * IG
+            else:
+                Q[:, i] = bcp_r['SW_absorptivity_3'] * IG
+        else:
+            print('no change')
+
+    TCd['Q'] = Q               # replace Q in TCd with new Q
+
+    return TCd
+
+def u_assembly(TCd, rad_surf_tot):
+    u = np.empty((len(rad_surf_tot), 1))         # create u matrix
+    for i in range(0, TCd.shape[1]):
+        TCd_i = TCd[str(i)]
+        T = TCd_i['T']
+        T = T[:, ~np.isnan(T).any(axis=0)]
+        if np.shape(T)[1] == 0:
+            print('No Temp')
+        else:
+            u = np.append(u, T, axis=1)
+
+    u = np.delete(u, 0, 1)
+
+    for j in range(0, TCd.shape[1]):
+        TCd_j = TCd[str(j)]
+        Q = TCd_j['Q']
+        Q = Q[:, ~np.isnan(Q).any(axis=0)]
+        if np.shape(Q)[1] == 0:
+            print('No Heat Flow')
+        else:
+            u = np.append(u, Q, axis=1)
+
+    return u
