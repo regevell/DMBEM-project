@@ -16,10 +16,13 @@ import network
 # ===============
 
 # Parameters
-Kp = 1e4    # # P-controler gain, Kp -> ∞
-Kp = 1e-3           # no controller Kp -> 0
-Kp = 500
+# Kp = 1e4    # # P-controler gain, Kp -> ∞
+# Kp = 1e-3           # no controller Kp -> 0
+Kpc = 500
+Kpf = 1e-3
+Kph = 1e4
 dt = 5     # s simulation time step
+# lag_blind = 10*60/dt
 
 # Geometry
 l = 3                       # m length of the cubic room
@@ -158,7 +161,7 @@ TCd2 = {'A': A2, 'G': G2, 'b': b2, 'C': C2, 'f': f2, 'y': y2}
 # TCd3: air infiltration and controller (in purple)
 A3 = np.array([[1],
                [1]])
-G3 = np.diag(np.hstack([Gv, Kp]))
+G3 = np.diag(np.hstack([Gv, Kpf]))
 b3 = np.array([1, 1])
 C3 = np.array([Capacity['Air'] / 2])
 f3 = 1
@@ -213,12 +216,254 @@ TCa = dm4bem.TCAss(TCd, AssX)
 # Thermal circuit -> state-space
 # ==============================
 
-[As, Bs, Cs, Ds] = dm4bem.tc2ss(
+[Af, Bf, Cf, Df] = dm4bem.tc2ss(
     TCa['A'], TCa['G'], TCa['b'], TCa['C'], TCa['f'], TCa['y'])
 
+
+# Thermal network
+# ---------------
+# Dissembled circuits
+# TCd0:  Concrete and insulation wall  (in red)
+nq = 1 + 2 * (wall['Meshes']['Concrete'] + wall['Meshes']['Insulation'])
+nt = 1 + 2 * (wall['Meshes']['Concrete'] + wall['Meshes']['Insulation'])
+
+A0 = np.eye(nq + 1, nt)
+A0 = -np.diff(A0, 1, 0).T
+
+nc = wall['Meshes']['Concrete']
+ni = wall['Meshes']['Insulation']
+Gcm = 2 * nc * [G_cd['Concrete']]
+Gcm = 2 * nc * np.array(Gcm)
+Gim = 2 * ni * [G_cd['Insulation']]
+Gim = 2 * wall['Meshes']['Insulation'] * np.array(Gim)
+G0 = np.diag(np.hstack([Gw['out'], Gcm, Gim]))
+
+
+b0 = np.zeros(nq)
+b0[0] = 1
+
+Ccm = Capacity['Concrete'] / nc * np.mod(range(0, 2 * nc), 2)
+Cim = Capacity['Insulation'] / ni * np.mod(range(0, 2 * ni), 2)
+C0 = np.diag(np.hstack([Ccm, Cim, 0]))
+
+f0 = np.zeros(nt)
+f0[0] = f0[-1] = 1
+
+y0 = np.zeros(nt)
+
+TCd0 = {'A': A0, 'G': G0, 'b': b0, 'C': C0, 'f': f0, 'y': y0}
+
+# TCd1: Indoor air (in blue)
+A1 = np.array([[-1, 0, 0, 0, 1],
+               [0, -1, 0, 0, 1],
+               [0, 0, -1, 0, 1],
+               [0, 0, 0, -1, 1]])
+G1 = np.diag(np.hstack([Gg['in'], Gg['in'], Gg['in'], Gg['in']]))
+b1 = np.zeros(4)
+C1 = np.diag([0, 0, 0, 0, Capacity['Air'] / 2])
+f1 = np.array([0, 0, 0, 0, 1])
+y1 = np.array([0, 0, 0, 0, 1])
+TCd1 = {'A': A1, 'G': G1, 'b': b1, 'C': C1, 'f': f1, 'y': y1}
+
+# TCd2: Glass (in green)
+A2 = np.array([[1, 0],
+               [-1, 1]])
+Ggo = h['out'] * wall['Surface']['Glass']
+Ggs = 1 / (1 / Ggo + 1 / (2 * G_cd['Glass']))
+G2 = np.diag(np.hstack([Ggs, 2 * G_cd['Glass']]))
+b2 = np.array([1, 0])
+C2 = np.diag([Capacity['Glass'], 0])
+f2 = np.array([1, 0])
+y2 = np.array([0, 0])
+TCd2 = {'A': A2, 'G': G2, 'b': b2, 'C': C2, 'f': f2, 'y': y2}
+
+# TCd3: air infiltration and controller (in purple)
+A3 = np.array([[1],
+               [1]])
+G3 = np.diag(np.hstack([Gv, Kpc]))
+b3 = np.array([1, 1])
+C3 = np.array([Capacity['Air'] / 2])
+f3 = 1
+y3 = 1
+TCd3 = {'A': A3, 'G': G3, 'b': b3, 'C': C3, 'f': f3, 'y': y3}
+
+# TCd4: Roof (in grey)
+A4 = np.array([[-1, 0, 0],
+               [-1, 1, 0],
+               [0, -1, 1]])
+G4 = np.diag(np.hstack([Gw['out'], Gim]))
+b4 = np.array([1, 0, 0])
+C4 = np.diag([0, Capacity['Insulation'], 0])
+f4 = np.array([1, 0, 1])
+y4 = np.array([0, 0, 0])
+TCd4 = {'A': A4, 'G': G4, 'b': b4, 'C': C4, 'f': f4, 'y': y4}
+
+# TCd5: Floor (in blue)
+A5 = np.array([[1, 0, 0, 0],
+               [-1, 1, 0, 0],
+               [0, -1, 1, 0],
+               [0, 0, -1, 1]])
+G5 = np.diag(np.hstack(
+    [Gw['in'], Gw['in'], G_cd['Concrete'], G_cd['Concrete']]))
+b5 = np.array([1, 0, 0, 0])
+C5 = np.diag([Capacity['Air'], 0, Capacity['Concrete'], 0])
+f5 = np.array([0, 0, 0, 1])
+y5 = np.array([0, 0, 0, 0])
+TCd5 = {'A': A5, 'G': G5, 'b': b5, 'C': C5, 'f': f5, 'y': y5}
+
+TCd = {'0': TCd0,
+       '1': TCd1,
+       '2': TCd2,
+       '3': TCd3,
+       '4': TCd4,
+       '5': TCd5}
+
+AssX = [[TCd['0'], 4, TCd['1'], 0],
+        [TCd['2'], 1, TCd['1'], 1],
+        [TCd['3'], 0, TCd['1'], 4],
+        [TCd['4'], 2, TCd['1'], 2],
+        [TCd['5'], 3, TCd['1'], 3]]
+
+AssX = np.array([[0, 4, 1, 0],
+                 [2, 1, 1, 1],
+                 [3, 0, 1, 4],
+                 [4, 2, 1, 2],
+                 [5, 3, 1, 3]])
+
+TCa = dm4bem.TCAss(TCd, AssX)
+
+# Thermal circuit -> state-space
+# ==============================
+
+[Ac, Bc, Cc, Dc] = dm4bem.tc2ss(
+    TCa['A'], TCa['G'], TCa['b'], TCa['C'], TCa['f'], TCa['y'])
+
+# Thermal network
+# ---------------
+# Dissembled circuits
+# TCd0:  Concrete and insulation wall  (in red)
+nq = 1 + 2 * (wall['Meshes']['Concrete'] + wall['Meshes']['Insulation'])
+nt = 1 + 2 * (wall['Meshes']['Concrete'] + wall['Meshes']['Insulation'])
+
+A0 = np.eye(nq + 1, nt)
+A0 = -np.diff(A0, 1, 0).T
+
+nc = wall['Meshes']['Concrete']
+ni = wall['Meshes']['Insulation']
+Gcm = 2 * nc * [G_cd['Concrete']]
+Gcm = 2 * nc * np.array(Gcm)
+Gim = 2 * ni * [G_cd['Insulation']]
+Gim = 2 * wall['Meshes']['Insulation'] * np.array(Gim)
+G0 = np.diag(np.hstack([Gw['out'], Gcm, Gim]))
+
+
+b0 = np.zeros(nq)
+b0[0] = 1
+
+Ccm = Capacity['Concrete'] / nc * np.mod(range(0, 2 * nc), 2)
+Cim = Capacity['Insulation'] / ni * np.mod(range(0, 2 * ni), 2)
+C0 = np.diag(np.hstack([Ccm, Cim, 0]))
+
+f0 = np.zeros(nt)
+f0[0] = f0[-1] = 1
+
+y0 = np.zeros(nt)
+
+TCd0 = {'A': A0, 'G': G0, 'b': b0, 'C': C0, 'f': f0, 'y': y0}
+
+# TCd1: Indoor air (in blue)
+A1 = np.array([[-1, 0, 0, 0, 1],
+               [0, -1, 0, 0, 1],
+               [0, 0, -1, 0, 1],
+               [0, 0, 0, -1, 1]])
+G1 = np.diag(np.hstack([Gg['in'], Gg['in'], Gg['in'], Gg['in']]))
+b1 = np.zeros(4)
+C1 = np.diag([0, 0, 0, 0, Capacity['Air'] / 2])
+f1 = np.array([0, 0, 0, 0, 1])
+y1 = np.array([0, 0, 0, 0, 1])
+TCd1 = {'A': A1, 'G': G1, 'b': b1, 'C': C1, 'f': f1, 'y': y1}
+
+# TCd2: Glass (in green)
+A2 = np.array([[1, 0],
+               [-1, 1]])
+Ggo = h['out'] * wall['Surface']['Glass']
+Ggs = 1 / (1 / Ggo + 1 / (2 * G_cd['Glass']))
+G2 = np.diag(np.hstack([Ggs, 2 * G_cd['Glass']]))
+b2 = np.array([1, 0])
+C2 = np.diag([Capacity['Glass'], 0])
+f2 = np.array([1, 0])
+y2 = np.array([0, 0])
+TCd2 = {'A': A2, 'G': G2, 'b': b2, 'C': C2, 'f': f2, 'y': y2}
+
+# TCd3: air infiltration and controller (in purple)
+A3 = np.array([[1],
+               [1]])
+G3 = np.diag(np.hstack([Gv, Kph]))
+b3 = np.array([1, 1])
+C3 = np.array([Capacity['Air'] / 2])
+f3 = 1
+y3 = 1
+TCd3 = {'A': A3, 'G': G3, 'b': b3, 'C': C3, 'f': f3, 'y': y3}
+
+# TCd4: Roof (in grey)
+A4 = np.array([[-1, 0, 0],
+               [-1, 1, 0],
+               [0, -1, 1]])
+G4 = np.diag(np.hstack([Gw['out'], Gim]))
+b4 = np.array([1, 0, 0])
+C4 = np.diag([0, Capacity['Insulation'], 0])
+f4 = np.array([1, 0, 1])
+y4 = np.array([0, 0, 0])
+TCd4 = {'A': A4, 'G': G4, 'b': b4, 'C': C4, 'f': f4, 'y': y4}
+
+# TCd5: Floor (in blue)
+A5 = np.array([[1, 0, 0, 0],
+               [-1, 1, 0, 0],
+               [0, -1, 1, 0],
+               [0, 0, -1, 1]])
+G5 = np.diag(np.hstack(
+    [Gw['in'], Gw['in'], G_cd['Concrete'], G_cd['Concrete']]))
+b5 = np.array([1, 0, 0, 0])
+C5 = np.diag([Capacity['Air'], 0, Capacity['Concrete'], 0])
+f5 = np.array([0, 0, 0, 1])
+y5 = np.array([0, 0, 0, 0])
+TCd5 = {'A': A5, 'G': G5, 'b': b5, 'C': C5, 'f': f5, 'y': y5}
+
+TCd = {'0': TCd0,
+       '1': TCd1,
+       '2': TCd2,
+       '3': TCd3,
+       '4': TCd4,
+       '5': TCd5}
+
+AssX = [[TCd['0'], 4, TCd['1'], 0],
+        [TCd['2'], 1, TCd['1'], 1],
+        [TCd['3'], 0, TCd['1'], 4],
+        [TCd['4'], 2, TCd['1'], 2],
+        [TCd['5'], 3, TCd['1'], 3]]
+
+AssX = np.array([[0, 4, 1, 0],
+                 [2, 1, 1, 1],
+                 [3, 0, 1, 4],
+                 [4, 2, 1, 2],
+                 [5, 3, 1, 3]])
+
+TCa = dm4bem.TCAss(TCd, AssX)
+
+# Thermal circuit -> state-space
+# ==============================
+
+[Ah, Bh, Ch, Dh] = dm4bem.tc2ss(
+    TCa['A'], TCa['G'], TCa['b'], TCa['C'], TCa['f'], TCa['y'])
 # Maximum time-step
-dtmax = min(-2. / np.linalg.eig(As)[0])
-print(f'Maximum time step: {dtmax:.2f} s')
+dtmax = min(-2. / np.linalg.eig(Af)[0])
+print(f'Maximum time step f: {dtmax:.2f} s')
+
+dtmax = min(-2. / np.linalg.eig(Ac)[0])
+print(f'Maximum time step c: {dtmax:.2f} s')
+
+dtmax = min(-2. / np.linalg.eig(Ah)[0])
+print(f'Maximum time step h: {dtmax:.2f} s')
 
 # Step response
 # -------------
@@ -229,7 +474,7 @@ n = int(np.floor(duration / dt))
 t = np.arange(0, n * dt, dt)    # time
 
 # Vectors of state and input (in time)
-n_tC = As.shape[0]              # no of state variables (temps with capacity)
+n_tC = Af.shape[0]              # no of state variables (temps with capacity)
 # u = [To To To Tsp Phio Phii Qaux Phia]
 u = np.zeros([13, n])
 u[0:3, :] = np.ones([3, n])
@@ -241,24 +486,24 @@ temp_imp = np.zeros([n_tC, t.shape[0]])
 
 I = np.eye(n_tC)
 for k in range(n - 1):
-    temp_exp[:, k + 1] = (I + dt * As) @\
-        temp_exp[:, k] + dt * Bs @ u[:, k]
-    temp_imp[:, k + 1] = np.linalg.inv(I - dt * As) @\
-        (temp_imp[:, k] + dt * Bs @ u[:, k])
+    temp_exp[:, k + 1] = (I + dt * Ac) @\
+        temp_exp[:, k] + dt * Bc @ u[:, k]
+    temp_imp[:, k + 1] = np.linalg.inv(I - dt * Ac) @\
+        (temp_imp[:, k] + dt * Bc @ u[:, k])
 
-y_exp = Cs @ temp_exp + Ds @  u
-y_imp = Cs @ temp_imp + Ds @  u
+y_exp = Cc @ temp_exp + Dc @  u
+y_imp = Cc @ temp_imp + Dc @  u
 
 fig, axs = plt.subplots(3, 1)
 axs[0].plot(t / 3600, y_exp.T, t / 3600, y_imp.T)
 axs[0].set(ylabel='$T_i$ [°C]', title='Step input: To = 1°C')
 
-'''
+
 # Simulation with weather data
 # ----------------------------
 filename = 'FRA_Lyon.074810_IWEC.epw'
 start_date = '2000-01-03 12:00:00'
-end_date = '2000-01-04 18:00:00'
+end_date = '2000-03-04 18:00:00'
 
 # Read weather data from Energyplus .epw file
 [data, meta] = dm4bem.read_epw(filename, coerce_year=None)
@@ -275,9 +520,6 @@ surface_orientation = {'slope': 90,
 albedo = 0.2
 rad_surf1 = dm4bem.sol_rad_tilt_surf(weather, surface_orientation, albedo)
 rad_surf1['Φt1'] = rad_surf1.sum(axis=1)
-'''
-
-weather, rad_surf1, radN, radE, radW, radR1, radR2 = network.weather_data()
 
 # Interpolate weather data for time step dt
 data = pd.concat([weather['temp_air'], rad_surf1['Φt1']], axis=1)
@@ -306,20 +548,42 @@ u = pd.concat([data['To'], data['To'], data['To'], data['Ti'],
                axis=1)
 
 # initial values for temperatures
-temp_exp = 20 * np.ones([As.shape[0], u.shape[0]])
+Tisp = 20
+DeltaT = 5
+temp_exp = np.zeros([n_tC, t.shape[0]])
+temp_imp = np.zeros([n_tC, t.shape[0]])
+Tisp = Tisp * np.ones(u.shape[0])
+y = np.zeros(u.shape[0])
+y[0] = Tisp[0]
+qHVAC = 0 * np.ones(u.shape[0])
 
 # integration in time
-I = np.eye(As.shape[0])
+Qtot = 0
+DeltaBlind = 2
+I = np.eye(n_tC)
 for k in range(u.shape[0] - 1):
-    temp_exp[:, k + 1] = (I + dt * As) @ temp_exp[:, k]\
-        + dt * Bs @ u.iloc[k, :]
-# Indoor temperature
-y_exp = Cs @ temp_exp + Ds @ u.to_numpy().T
-# HVAC heat flow
-q_HVAC = Kp * (data['Ti'] - y_exp[0, :])
+    if y[k] > Tisp[k] + DeltaBlind:
+        u.iloc[k, 7] = 0
+        u.iloc[k, 11] = 0
+        u.iloc[k, 12] = 0
+    if y[k] > DeltaT + Tisp[k]:
+        temp_exp[:, k + 1] = (I + dt * Ac) @ temp_exp[:, k]\
+            + dt * Bc @ u.iloc[k, :]
+        y[k + 1] = Cc @ temp_exp[:, k + 1] + Dc @ u.iloc[k + 1]
+        qHVAC[k + 1] = Kpc * (Tisp[k + 1] - y[k + 1])
+    if y[k] < Tisp[k]:
+        temp_exp[:, k + 1] = (I + dt * Ah) @ temp_exp[:, k]\
+            + dt * Bh @ u.iloc[k, :]
+        y[k + 1] = Ch @ temp_exp[:, k + 1] + Dh @ u.iloc[k + 1]
+        qHVAC[k + 1] = Kph * (Tisp[k + 1] - y[k + 1])
+    else:
+        temp_exp[:, k + 1] = (I + dt * Af) @ temp_exp[:, k]\
+            + dt * Bf @ u.iloc[k, :]
+        y[k + 1] = Cf @ temp_exp[:, k + 1] + Df @ u.iloc[k]
+        qHVAC[k + 1] = 0
 
 # plot indoor and outdoor temperature
-axs[1].plot(t / 3600, y_exp[0, :], label='$T_{indoor}$')
+axs[1].plot(t / 3600, y, label='$T_{indoor}$')
 axs[1].plot(t / 3600, data['To'], label='$T_{outdoor}$')
 axs[1].set(xlabel='Time [h]',
            ylabel='Temperatures [°C]',
@@ -327,10 +591,11 @@ axs[1].set(xlabel='Time [h]',
 axs[1].legend(loc='upper right')
 
 # plot total solar radiation and HVAC heat flow
-axs[2].plot(t / 3600,  q_HVAC, label='$q_{HVAC}$')
+axs[2].plot(t / 3600,  qHVAC, label='$q_{HVAC}$')
 axs[2].plot(t / 3600, data['Φt1'], label='$Φ_{total}$')
 axs[2].set(xlabel='Time [h]',
            ylabel='Heat flows [W]')
 axs[2].legend(loc='upper right')
-
+plt.ylim(-1500, 3000)
 fig.tight_layout()
+
