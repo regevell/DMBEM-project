@@ -87,7 +87,7 @@ TCd_f = pd.DataFrame(TCd_f)
 TCd_c = pd.DataFrame(TCd_c)
 TCd_h = pd.DataFrame(TCd_h)
 
-u = TCM_funcs.u_assembly(TCd_f, rad_surf_tot)
+u, rad_surf_tot = TCM_funcs.u_assembly(TCd_f, rad_surf_tot)
 AssX = TCM_funcs.assembly(TCd_f)
 
 TCd_f = pd.DataFrame.to_dict(TCd_f)

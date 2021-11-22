@@ -158,33 +158,6 @@ def indoor_air(bcp_sur, h, V, Qa, rad_surf_tot):
     return TCd
 
 
-def ventilation(V, V_dot, Kp, T_set, rad_surf_tot):
-    """
-    Input:
-    V, Volume of the room (from bcp)
-    V_dot
-    Kp
-    Output:
-    TCd, a dictionary of the all the matrices describing the thermal circuit of the ventilation
-    """
-    Gv = V_dot * 1.2 * 1000  # Va_dot * air['Density'] * air['Specific heat']
-    A = np.array([[1],
-                  [1]])
-    G = np.diag(np.hstack([Gv, Kp]))
-    b = np.array([1, 1])
-    C = np.array((1.2 * 1000 * V) / 2)
-    f = 1
-    y = 1
-    Q = np.zeros((rad_surf_tot.shape[0], 1))
-    Q[:, :] = 'NaN'
-    T = np.zeros((rad_surf_tot.shape[0], 2))
-    T[:, 0] = rad_surf_tot['To']
-    T[:, 1] = T_set['heating']
-
-    TCd = {'A': A, 'G': G, 'b': b, 'C': C, 'f': f, 'y': y, 'Q': Q, 'T': T}
-
-    return
-
 def ventilation(V, V_dot, Kpf, T_set, rad_surf_tot):
     """
     Input:
@@ -199,7 +172,7 @@ def ventilation(V, V_dot, Kpf, T_set, rad_surf_tot):
                   [1]])
     G = np.diag(np.hstack([Gv, Kpf]))
     b = np.array([1, 1])
-    C = np.array((1.2 * 1000 * V) / 2)
+    C = np.array([(1.2 * 1000 * V) / 2])
     f = 1
     y = 1
     Q = np.zeros((rad_surf_tot.shape[0], 1))
@@ -338,7 +311,7 @@ def susp_floor(bcp_r, h, V, rad_surf_tot, uc):
     Q[:, 0] = bcp_r['SW_absorptivity_1'] * bcp_r['Surface'] * rad_surf_tot[str(uc)]
     Q[:, (nt - 1)] = -1
     uca = uc + 1
-    Q[:, 1:(nt - 1)] = 'NaN'
+    Q[:, 0:(nt - 1)] = 'NaN'
 
     T = np.zeros((rad_surf_tot.shape[0], nq))
     T[:, 0] = rad_surf_tot['To']
@@ -449,6 +422,7 @@ def indoor_rad(bcp_r, TCd, IG):
 
 
 def u_assembly(TCd, rad_surf_tot):
+    rad_surf_tot = rad_surf_tot.loc[:, rad_surf_tot.any()]
     u = np.empty((len(rad_surf_tot), 1))  # create u matrix
     for i in range(0, TCd.shape[1]):
         TCd_i = TCd[str(i)]
@@ -472,7 +446,7 @@ def u_assembly(TCd, rad_surf_tot):
 
     u = pd.DataFrame(u)
 
-    return u
+    return u, rad_surf_tot
 
 
 def assembly(TCd):
@@ -541,7 +515,7 @@ def solver(TCAf, TCAc, TCAh, dt, u, t, Tisp, DeltaT, DeltaBlind, Kpc, Kph, rad_s
     # Vectors of state and input (in time)
     n_tC = Af.shape[0]  # no of state variables (temps with capacity)
     # u = [To To To Tsp Phio Phii Qaux Phia]
-    u_ss = np.zeros([(u.shape[1]-1), n])
+    u_ss = np.zeros([(u.shape[1]), n])
     u_ss[0:3, :] = np.ones([3, n])
     u_ss[4:6, :] = 1
 
