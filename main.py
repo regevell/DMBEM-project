@@ -59,7 +59,7 @@ for i in range(0, len(bcp)):
         TCd_i, uca = TCM_funcs.flat_roof_w_in(bcp.loc[i, :], h, rad_surf_tot, uc)
         TCd.update({str(i+2): TCd_i})
     uc = uca                                                    # update heat flow tracker
-TCd = pd.DataFrame(TCd)
+# TCd = pd.DataFrame(TCd)
 
 for i in range(0, len(bcp)):
     if bcp.Element_Type[i] == 'Solid Wall w/In':
@@ -72,13 +72,17 @@ for i in range(0, len(bcp)):
         TCd_i = TCM_funcs.indoor_rad(bcp.loc[i, :], TCd[str(i+2)], IG)
         TCd[str(i + 2)] = TCd_i
 
-TCd_f = TCd
-TCd_c = TCd
-TCd_h = TCd
-TCd_c.loc[:, 1] = TCM_funcs.ventilation(V, Vdot, Kpc, T_set, rad_surf_tot)
-TCd_h[1] = TCM_funcs.ventilation(V, Vdot, Kph, T_set, rad_surf_tot)
+TCd_f = dict(TCd)
+TCd_c = dict(TCd)
+TCd_h = dict(TCd)
+TCd_c[str(1)] = TCM_funcs.ventilation(V, Vdot, Kpc, T_set, rad_surf_tot)
+TCd_h[str(1)] = TCM_funcs.ventilation(V, Vdot, Kph, T_set, rad_surf_tot)
 
-u = TCM_funcs.u_assembly(TCd, rad_surf_tot)
+TCd_f = pd.DataFrame(TCd_f)
+TCd_c = pd.DataFrame(TCd_c)
+TCd_h = pd.DataFrame(TCd_h)
+
+u = TCM_funcs.u_assembly(TCd_f, rad_surf_tot)
 Ass_f = TCM_funcs.assembly(TCd_f)
 Ass_c = TCM_funcs.assembly(TCd_c)
 Ass_h = TCM_funcs.assembly(TCd_h)

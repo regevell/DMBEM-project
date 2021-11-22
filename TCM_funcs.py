@@ -419,7 +419,7 @@ def indoor_rad(bcp_r, TCd, IG):
 
 def u_assembly(TCd, rad_surf_tot):
     u = np.empty((len(rad_surf_tot), 1))  # create u matrix
-    for i in range(0, TCd.shape[1]-1):
+    for i in range(0, TCd.shape[1]):
         TCd_i = TCd[str(i)]
         T = TCd_i['T']
         T = T[:, ~np.isnan(T).any(axis=0)]
