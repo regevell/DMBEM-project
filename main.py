@@ -31,12 +31,18 @@ Vdot = V * ACH / 3600                                                         # 
 albedo_sur = 0.2                                                              # albedo for the surroundings
 latitude = 45
 Qa = 0                                                                        # auxiliary heat flow
+Tisp = 20
+DeltaT = 5
+DeltaBlind = 2
+WF = 'GBR_ENG_RAF.Lyneham.037400_TMYx.2004-2018.epw'
+t_start = '2000-01-03 12:00:00'
+t_end = '2000-01-04 18:00:00'
 
 # Add thermo-physical properties
 bcp = TCM_funcs.thphprop(bc)
 
 # Determine solar radiation for each element
-rad_surf_tot = TCM_funcs.rad(bcp, albedo_sur, latitude, dt)
+rad_surf_tot, t = TCM_funcs.rad(bcp, albedo_sur, latitude, dt, WF, t_start, t_end)
 
 # Thermal Circuits
 TCd = {}
@@ -87,4 +93,10 @@ Ass_f = TCM_funcs.assembly(TCd_f)
 Ass_c = TCM_funcs.assembly(TCd_c)
 Ass_h = TCM_funcs.assembly(TCd_h)
 
-print(TCd)
+TCAf = dm4bem.TCAss(TCd_f, Ass_f)
+TCAc = dm4bem.TCAss(TCd_c, Ass_c)
+TCAh = dm4bem.TCAss(TCd_h, Ass_h)
+
+TCM_funcs.solver(TCAf, TCAc, TCAh, dt, u, t, Tisp, DeltaT, DeltaBlind, Kpc, Kph, rad_surf_tot)
+
+

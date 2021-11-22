@@ -8,6 +8,7 @@ File with all the functions
 
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 import dm4bem
 
 
@@ -360,7 +361,7 @@ def flat_roof_w_in(bcp_r, h, rad_surf_tot, uc):
     return TCd, uca
 
 
-def rad(bcp, albedo_sur, latitude, dt):
+def rad(bcp, albedo_sur, latitude, dt, WF, t_start, t_end):
     """
     Created on Wed Oct 27 15:19:32 2021
 
@@ -368,9 +369,9 @@ def rad(bcp, albedo_sur, latitude, dt):
     """
     # Simulation with weather data
     # ----------------------------
-    filename = 'GBR_ENG_RAF.Lyneham.037400_TMYx.2004-2018.epw'
-    start_date = '2000-01-03 12:00:00'
-    end_date = '2000-01-04 18:00:00'
+    filename = WF
+    start_date = t_start
+    end_date = t_end
 
     # Read weather data from Energyplus .epw file
     [data, meta] = dm4bem.read_epw(filename, coerce_year=None)
@@ -394,7 +395,10 @@ def rad(bcp, albedo_sur, latitude, dt):
     data = data.resample(str(dt) + 'S').interpolate(method='linear')
     data = data.rename(columns={'temp_air': 'To'})
 
-    return data
+    # time
+    t = dt * np.arange(data.shape[0])
+
+    return data, t
 
 
 def indoor_rad(bcp_r, TCd, IG):
@@ -480,3 +484,106 @@ def assembly(TCd):
     print(AssX)
 
     return AssX
+
+
+def solver(TCAf, TCAc, TCAh, dt, u, t, Tisp, DeltaT, DeltaBlind, Kpc, Kph, rad_surf_tot):
+    [Af, Bf, Cf, Df] = dm4bem.tc2ss(TCAf['A'], TCAf['G'], TCAf['b'], TCAf['C'], TCAf['f'], TCAf['y'])
+    [Ac, Bc, Cc, Dc] = dm4bem.tc2ss(TCAc['A'], TCAc['G'], TCAc['b'], TCAc['C'], TCAc['f'], TCAc['y'])
+    [Ah, Bh, Ch, Dh] = dm4bem.tc2ss(TCAh['A'], TCAh['G'], TCAh['b'], TCAh['C'], TCAh['f'], TCAh['y'])
+
+    # Maximum time-step
+    dtmax = min(-2. / np.linalg.eig(Af)[0])
+    print(f'Maximum time step f: {dtmax:.2f} s')
+
+    dtmax = min(-2. / np.linalg.eig(Ac)[0])
+    print(f'Maximum time step c: {dtmax:.2f} s')
+
+    dtmax = min(-2. / np.linalg.eig(Ah)[0])
+    print(f'Maximum time step h: {dtmax:.2f} s')
+
+    # Step response
+    # -------------
+    duration = 3600 * 24 * 1  # [s]
+    # number of steps
+    n = int(np.floor(duration / dt))
+
+    t_ss = np.arange(0, n * dt, dt)  # time
+
+    # Vectors of state and input (in time)
+    n_tC = Af.shape[0]  # no of state variables (temps with capacity)
+    # u = [To To To Tsp Phio Phii Qaux Phia]
+    u_ss = np.zeros([13, n])
+    u_ss[0:3, :] = np.ones([3, n])
+    u_ss[4:6, :] = 1
+
+    # initial values for temperatures obtained by explicit and implicit Euler
+    temp_exp = np.zeros([n_tC, t_ss.shape[0]])
+    temp_imp = np.zeros([n_tC, t_ss.shape[0]])
+
+    I = np.eye(n_tC)
+    for k in range(n - 1):
+        temp_exp[:, k + 1] = (I + dt * Ac) @ \
+                             temp_exp[:, k] + dt * Bc @ u_ss[:, k]
+        temp_imp[:, k + 1] = np.linalg.inv(I - dt * Ac) @ \
+                             (temp_imp[:, k] + dt * Bc @ u_ss[:, k])
+
+    y_exp = Cc @ temp_exp + Dc @ u_ss
+    y_imp = Cc @ temp_imp + Dc @ u_ss
+
+    fig, axs = plt.subplots(3, 1)
+    axs[0].plot(t / 3600, y_exp.T, t / 3600, y_imp.T)
+    axs[0].set(ylabel='$T_i$ [°C]', title='Step input: To = 1°C')
+
+    # initial values for temperatures
+    temp_exp = np.zeros([n_tC, t.shape[0]])
+    temp_imp = np.zeros([n_tC, t.shape[0]])
+    Tisp = Tisp * np.ones(u.shape[0])
+    y = np.zeros(u.shape[0])
+    y[0] = Tisp[0]
+    qHVAC = 0 * np.ones(u.shape[0])
+
+    # integration in time
+    Qtot = 0            # ?
+
+    I = np.eye(n_tC)
+    for k in range(u.shape[0] - 1):
+        if y[k] > Tisp[k] + DeltaBlind:
+            u.iloc[k, 7] = 0
+            u.iloc[k, 11] = 0
+            u.iloc[k, 12] = 0
+        if y[k] > DeltaT + Tisp[k]:
+            temp_exp[:, k + 1] = (I + dt * Ac) @ temp_exp[:, k] \
+                                 + dt * Bc @ u.iloc[k, :]
+            y[k + 1] = Cc @ temp_exp[:, k + 1] + Dc @ u.iloc[k + 1]
+            qHVAC[k + 1] = Kpc * (Tisp[k + 1] - y[k + 1])
+        if y[k] < Tisp[k]:
+            temp_exp[:, k + 1] = (I + dt * Ah) @ temp_exp[:, k] \
+                                 + dt * Bh @ u.iloc[k, :]
+            y[k + 1] = Ch @ temp_exp[:, k + 1] + Dh @ u.iloc[k + 1]
+            qHVAC[k + 1] = Kph * (Tisp[k + 1] - y[k + 1])
+        else:
+            temp_exp[:, k + 1] = (I + dt * Af) @ temp_exp[:, k] \
+                                 + dt * Bf @ u.iloc[k, :]
+            y[k + 1] = Cf @ temp_exp[:, k + 1] + Df @ u.iloc[k]
+            qHVAC[k + 1] = 0
+
+    # plot indoor and outdoor temperature
+    axs[1].plot(t / 3600, y, label='$T_{indoor}$')
+    axs[1].plot(t / 3600, rad_surf_tot['To'], label='$T_{outdoor}$')
+    axs[1].set(xlabel='Time [h]',
+               ylabel='Temperatures [°C]',
+               title='Simulation for weather')
+    axs[1].legend(loc='upper right')
+
+    # plot total solar radiation and HVAC heat flow
+    del rad_surf_tot['To']
+    Φt = rad_surf_tot.sum(axis=1)
+    axs[2].plot(t / 3600, qHVAC, label='$q_{HVAC}$')
+    axs[2].plot(t / 3600, Φt, label='$Φ_{total}$')
+    axs[2].set(xlabel='Time [h]',
+               ylabel='Heat flows [W]')
+    axs[2].legend(loc='upper right')
+    plt.ylim(-1500, 3000)
+    fig.tight_layout()
+
+    plt.show()
