@@ -546,7 +546,6 @@ def solver(TCAf, TCAc, TCAh, dt, u, t, Tisp, DeltaT, DeltaBlind, Kpc, Kph, rad_s
     qHVAC = 0 * np.ones(u.shape[0])
 
     # integration in time
-    Qtot = 0            # ?
 
     I = np.eye(n_tC)
     for k in range(u.shape[0] - 1):
