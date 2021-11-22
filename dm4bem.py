@@ -44,9 +44,9 @@ def TCAss(TCd, AssX):
         Assembled thermal circuit:
             TCdk = {'A': A, 'G': G, 'b': b, 'C': C, 'f': f, 'y': y}
     """
-    # Create assembing matrix Ass from AssX
-    # TCdf = pd.DataFrame(TCd).transpose()
-    TCdf = TCd.transpose()
+    # Create assembling matrix Ass from AssX
+    TCdf = pd.DataFrame(TCd).transpose()
+    # TCdf = TCd.transpose()
 
     # Global indexes of the 1st node of each TC
     size_f_eachTCd = TCdf.f.apply(lambda x: np.size(x))
