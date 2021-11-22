@@ -18,7 +18,7 @@ def building_characteristics():
     and create a data frame from it.
     """
 
-    bc = pd.read_csv(r'Building Characteristics.csv', na_values=["N"], keep_default_na=True)
+    bc = pd.read_csv(r'Building Characteristics_Test.csv', na_values=["N"], keep_default_na=True)
 
     return bc
 
@@ -183,7 +183,34 @@ def ventilation(V, V_dot, Kp, T_set, rad_surf_tot):
 
     TCd = {'A': A, 'G': G, 'b': b, 'C': C, 'f': f, 'y': y, 'Q': Q, 'T': T}
 
-    return TCd
+    return
+
+def ventilation(V, V_dot, Kpf, T_set, rad_surf_tot):
+    """
+    Input:
+    V, Volume of the room (from bcp)
+    V_dot
+    Kp
+    Output:
+    TCd, a dictionary of the all the matrices describing the thermal circuit of the ventilation
+    """
+    Gv = V_dot * 1.2 * 1000  # Va_dot * air['Density'] * air['Specific heat']
+    A = np.array([[1],
+                  [1]])
+    G = np.diag(np.hstack([Gv, Kpf]))
+    b = np.array([1, 1])
+    C = np.array((1.2 * 1000 * V) / 2)
+    f = 1
+    y = 1
+    Q = np.zeros((rad_surf_tot.shape[0], 1))
+    Q[:, :] = 'NaN'
+    T = np.zeros((rad_surf_tot.shape[0], 2))
+    T[:, 0] = rad_surf_tot['To']
+    T[:, 1] = T_set['heating']
+
+    vent_c = {'A': A, 'G': G, 'b': b, 'C': C, 'f': f, 'y': y, 'Q': Q, 'T': T}
+
+    return vent_c
 
 
 def solid_wall_w_ins(bcp_r, h, rad_surf_tot, uc):
@@ -214,9 +241,9 @@ def solid_wall_w_ins(bcp_r, h, rad_surf_tot, uc):
 
     nc = int(bcp_r['Mesh_1'])
     ni = int(bcp_r['Mesh_2'])
-    Gcm = 2 * nc * G_cd_cm
+    Gcm = 2 * nc * [G_cd_cm]
     Gcm = 2 * nc * np.array(Gcm)
-    Gim = 2 * ni * G_cd_in
+    Gim = 2 * ni * [G_cd_in]
     Gim = 2 * ni * np.array(Gim)
     G = np.diag(np.hstack([Gw['out'], Gcm, Gim]))
 
@@ -337,7 +364,7 @@ def flat_roof_w_in(bcp_r, h, rad_surf_tot, uc):
     Gw = h * bcp_r['Surface']
     G_cd_in = bcp_r['conductivity_2'] / bcp_r['Thickness_2'] * bcp_r['Surface']  # insulation
     ni = int(bcp_r['Mesh_2'])
-    Gim = 2 * ni * G_cd_in
+    Gim = 2 * ni * [G_cd_in]
     Gim = 2 * ni * np.array(Gim)
     G = np.diag(np.hstack([Gw['out'], Gim]))
     b = np.array([1, 0, 0])
@@ -443,6 +470,8 @@ def u_assembly(TCd, rad_surf_tot):
         else:
             u = np.append(u, Q, axis=1)
 
+    u = pd.DataFrame(u)
+
     return u
 
 
@@ -459,8 +488,8 @@ def assembly(TCd):
 
     Outputs: AssX
     """
-    TCd_last_node = np.zeros(len(TCd) - 1)  # define size of matrix for last node in each TC
-    TCd_element_numbers = np.arange(1, len(TCd), 1)  # create vector which contains the number for each element
+    TCd_last_node = np.zeros(TCd.shape[1] - 1)  # define size of matrix for last node in each TC
+    TCd_element_numbers = np.arange(1, TCd.shape[1], 1)  # create vector which contains the number for each element
 
     # compute number of last node of each thermal circuit and input into thermal circuit sizes matrix
     for i in range(0, len([TCd_last_node][0])):
@@ -512,7 +541,7 @@ def solver(TCAf, TCAc, TCAh, dt, u, t, Tisp, DeltaT, DeltaBlind, Kpc, Kph, rad_s
     # Vectors of state and input (in time)
     n_tC = Af.shape[0]  # no of state variables (temps with capacity)
     # u = [To To To Tsp Phio Phii Qaux Phia]
-    u_ss = np.zeros([13, n])
+    u_ss = np.zeros([(u.shape[1]-1), n])
     u_ss[0:3, :] = np.ones([3, n])
     u_ss[4:6, :] = 1
 
@@ -531,7 +560,7 @@ def solver(TCAf, TCAc, TCAh, dt, u, t, Tisp, DeltaT, DeltaBlind, Kpc, Kph, rad_s
     y_imp = Cc @ temp_imp + Dc @ u_ss
 
     fig, axs = plt.subplots(3, 1)
-    axs[0].plot(t / 3600, y_exp.T, t / 3600, y_imp.T)
+    axs[0].plot(t_ss / 3600, y_exp.T, t_ss / 3600, y_imp.T)
     axs[0].set(ylabel='$T_i$ [°C]', title='Step input: To = 1°C')
 
     # initial values for temperatures

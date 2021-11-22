@@ -1,8 +1,6 @@
 """
 Started on 28 October 2021.
-
 Authors: L.Beber, E.Regev, C.Gerike-Roberts
-
 Code which models the dynamic thermal transfer in a building.
 """
 import numpy as np
@@ -15,6 +13,7 @@ import dm4bem
 σ = 5.67e-8     # W/m².K⁴ Stefan-Bolzmann constant
 
 # Define building characteristics
+# xlfile = 'Building Characteristics_Test'
 bc = TCM_funcs.building_characteristics()
 
 # Define Inputs
@@ -26,7 +25,7 @@ T_set = pd.DataFrame([{'cooling': 26, 'heating': 20}])                        # 
 Tm = 20 + 273.15                                                              # K - Mean temperature for radiative exchange
 ACH = 1                                                                       # h*-1 - no. of air changes in volume per hour
 h = pd.DataFrame([{'in': 4., 'out': 10}])                                     # W/m² K - convection coefficients
-V = bc.Volume[4]                                                              # m³
+V = bc.Volume[3]                                                              # m³
 Vdot = V * ACH / 3600                                                         # m³/s - volume flow rate due to air changes
 albedo_sur = 0.2                                                              # albedo for the surroundings
 latitude = 45
@@ -89,14 +88,15 @@ TCd_c = pd.DataFrame(TCd_c)
 TCd_h = pd.DataFrame(TCd_h)
 
 u = TCM_funcs.u_assembly(TCd_f, rad_surf_tot)
-Ass_f = TCM_funcs.assembly(TCd_f)
-Ass_c = TCM_funcs.assembly(TCd_c)
-Ass_h = TCM_funcs.assembly(TCd_h)
+AssX = TCM_funcs.assembly(TCd_f)
 
-TCAf = dm4bem.TCAss(TCd_f, Ass_f)
-TCAc = dm4bem.TCAss(TCd_c, Ass_c)
-TCAh = dm4bem.TCAss(TCd_h, Ass_h)
+TCd_f = pd.DataFrame.to_dict(TCd_f)
+TCd_c = pd.DataFrame.to_dict(TCd_c)
+TCd_h = pd.DataFrame.to_dict(TCd_h)
+
+TCAf = dm4bem.TCAss(TCd_f, AssX)
+TCAc = dm4bem.TCAss(TCd_c, AssX)
+TCAh = dm4bem.TCAss(TCd_h, AssX)
 
 TCM_funcs.solver(TCAf, TCAc, TCAh, dt, u, t, Tisp, DeltaT, DeltaBlind, Kpc, Kph, rad_surf_tot)
-
 
