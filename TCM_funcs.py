@@ -120,6 +120,46 @@ def thphprop(BCdf):
     return BCdf
 
 
+def rad(bcp, albedo_sur, latitude, dt, WF, t_start, t_end):
+    """
+    Created on Wed Oct 27 15:19:32 2021
+
+    @author: ellio
+    """
+    # Simulation with weather data
+    # ----------------------------
+    filename = WF
+    start_date = t_start
+    end_date = t_end
+
+    # Read weather data from Energyplus .epw file
+    [data, meta] = dm4bem.read_epw(filename, coerce_year=None)
+    weather = data[["temp_air", "dir_n_rad", "dif_h_rad"]]
+    del data
+    weather.index = weather.index.map(lambda t: t.replace(year=2000))
+    weather = weather[(weather.index >= start_date) & (
+            weather.index < end_date)]
+    # Solar radiation on a tilted surface South
+    Φt = {}
+    for k in range(0, len(bcp)):
+        surface_orientationS = {'slope': bcp.loc[k, 'Slope'],
+                                'azimuth': bcp.loc[k, 'Azimuth'],
+                                'latitude': latitude}
+        rad_surf = dm4bem.sol_rad_tilt_surf(weather, surface_orientationS, albedo_sur)
+        Φt.update({str(k + 2): rad_surf.sum(axis=1)})
+
+    Φt = pd.DataFrame(Φt)
+    # Interpolate weather data for time step dt
+    data = pd.concat([weather['temp_air'], Φt], axis=1)
+    data = data.resample(str(dt) + 'S').interpolate(method='linear')
+    data = data.rename(columns={'temp_air': 'To'})
+
+    # time
+    t = dt * np.arange(data.shape[0])
+
+    return data, t
+
+
 def indoor_air(bcp_sur, h, V, Qa, rad_surf_tot):
     """
     Input:
@@ -359,46 +399,6 @@ def flat_roof_w_in(bcp_r, h, rad_surf_tot, uc):
     TCd = {'A': A, 'G': G, 'b': b, 'C': C, 'f': f, 'y': y, 'Q': Q, 'T': T}
 
     return TCd, uca
-
-
-def rad(bcp, albedo_sur, latitude, dt, WF, t_start, t_end):
-    """
-    Created on Wed Oct 27 15:19:32 2021
-
-    @author: ellio
-    """
-    # Simulation with weather data
-    # ----------------------------
-    filename = WF
-    start_date = t_start
-    end_date = t_end
-
-    # Read weather data from Energyplus .epw file
-    [data, meta] = dm4bem.read_epw(filename, coerce_year=None)
-    weather = data[["temp_air", "dir_n_rad", "dif_h_rad"]]
-    del data
-    weather.index = weather.index.map(lambda t: t.replace(year=2000))
-    weather = weather[(weather.index >= start_date) & (
-            weather.index < end_date)]
-    # Solar radiation on a tilted surface South
-    Φt = {}
-    for k in range(0, len(bcp)):
-        surface_orientationS = {'slope': bcp.loc[k, 'Slope'],
-                                'azimuth': bcp.loc[k, 'Azimuth'],
-                                'latitude': latitude}
-        rad_surf = dm4bem.sol_rad_tilt_surf(weather, surface_orientationS, albedo_sur)
-        Φt.update({str(k + 2): rad_surf.sum(axis=1)})
-
-    Φt = pd.DataFrame(Φt)
-    # Interpolate weather data for time step dt
-    data = pd.concat([weather['temp_air'], Φt], axis=1)
-    data = data.resample(str(dt) + 'S').interpolate(method='linear')
-    data = data.rename(columns={'temp_air': 'To'})
-
-    # time
-    t = dt * np.arange(data.shape[0])
-
-    return data, t
 
 
 def indoor_rad(bcp_r, TCd, IG):
