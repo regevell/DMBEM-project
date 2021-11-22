@@ -99,4 +99,3 @@ TCAc = dm4bem.TCAss(TCd_c, AssX)
 TCAh = dm4bem.TCAss(TCd_h, AssX)
 
 TCM_funcs.solver(TCAf, TCAc, TCAh, dt, u, t, Tisp, DeltaT, DeltaBlind, Kpc, Kph, rad_surf_tot)
-
