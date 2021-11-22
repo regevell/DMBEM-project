@@ -18,7 +18,9 @@ import dm4bem
 bc = TCM_funcs.building_characteristics()
 
 # Define Inputs
-Kp = 1e4                                                                      # factor for HVAC
+Kpc = 500
+Kpf = 1e-3
+Kph = 1e4                                                                     # factor for HVAC
 dt = 5                                                                        # s - time step for solver
 T_set = pd.DataFrame([{'cooling': 26, 'heating': 20}])                        # C - temperature set points
 Tm = 20 + 273.15                                                              # K - Mean temperature for radiative exchange
@@ -39,7 +41,7 @@ rad_surf_tot = TCM_funcs.rad(bcp, albedo_sur, latitude, dt)
 # Thermal Circuits
 TCd = {}
 TCd.update({str(0): TCM_funcs.indoor_air(bcp.Surface, h, V, Qa, rad_surf_tot)})  # inside air
-TCd.update({str(1): TCM_funcs.ventilation(V, Vdot, Kp, T_set, rad_surf_tot)})  # ventilation and heating
+TCd.update({str(1): TCM_funcs.ventilation(V, Vdot, Kpf, T_set, rad_surf_tot)})  # ventilation and heating
 uc = 2                                                          # variable to track how many heat flows have been used
 IG = 0                                                          # set the radiation entering through windows to zero
 for i in range(0, len(bcp)):
@@ -70,6 +72,15 @@ for i in range(0, len(bcp)):
         TCd_i = TCM_funcs.indoor_rad(bcp.loc[i, :], TCd[str(i+2)], IG)
         TCd[str(i + 2)] = TCd_i
 
+TCd_f = TCd
+TCd_c = TCd
+TCd_h = TCd
+TCd_c.loc[:, 1] = TCM_funcs.ventilation(V, Vdot, Kpc, T_set, rad_surf_tot)
+TCd_h[1] = TCM_funcs.ventilation(V, Vdot, Kph, T_set, rad_surf_tot)
+
 u = TCM_funcs.u_assembly(TCd, rad_surf_tot)
+Ass_f = TCM_funcs.assembly(TCd_f)
+Ass_c = TCM_funcs.assembly(TCd_c)
+Ass_h = TCM_funcs.assembly(TCd_h)
 
 print(TCd)

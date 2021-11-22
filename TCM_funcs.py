@@ -10,8 +10,8 @@ import numpy as np
 import pandas as pd
 import dm4bem
 
-def building_characteristics():
 
+def building_characteristics():
     """
     This code is designed to read an excel file which contains the characteristics of the building
     and create a data frame from it.
@@ -84,7 +84,6 @@ def thphprop(BCdf):
                                                           'LW_emissivity_3', 'SW_transmittance_3', 'SW_absorptivity_3',
                                                           'albedo_3'])
 
-
     # fill columns with properties for the given materials 1-3 of each element
     for i in range(0, len(BCdf)):
         for j in range(0, len(thphp['Material'])):
@@ -118,6 +117,7 @@ def thphprop(BCdf):
                 BCdf.loc[i, 'albedo_3'] = thphp.Albedo[j]
 
     return BCdf
+
 
 def indoor_air(bcp_sur, h, V, Qa, rad_surf_tot):
     """
@@ -233,8 +233,8 @@ def solid_wall_w_ins(bcp_r, h, rad_surf_tot, uc):
 
     Q = np.zeros((rad_surf_tot.shape[0], nt))
     Q[:, 0] = bcp_r['SW_absorptivity_1'] * bcp_r['Surface'] * rad_surf_tot[str(uc)]
-    Q[:, (nt-1)] = -1
-    uca = uc+1
+    Q[:, (nt - 1)] = -1
+    uca = uc + 1
     Q[:, 1:(nt - 1)] = 'NaN'
 
     T = np.zeros((rad_surf_tot.shape[0], nq))
@@ -331,8 +331,8 @@ def flat_roof_w_in(bcp_r, h, rad_surf_tot, uc):
     nt = 2 * (int(bcp_r['Mesh_1']))
 
     A = np.array([[-1, 0, 0],
-                   [-1, 1, 0],
-                   [0, -1, 1]])
+                  [-1, 1, 0],
+                  [0, -1, 1]])
     Gw = h * bcp_r['Surface']
     G_cd_in = bcp_r['conductivity_2'] / bcp_r['Thickness_2'] * bcp_r['Surface']  # insulation
     ni = int(bcp_r['Mesh_2'])
@@ -378,7 +378,7 @@ def rad(bcp, albedo_sur, latitude, dt):
     del data
     weather.index = weather.index.map(lambda t: t.replace(year=2000))
     weather = weather[(weather.index >= start_date) & (
-        weather.index < end_date)]
+            weather.index < end_date)]
     # Solar radiation on a tilted surface South
     Φt = {}
     for k in range(0, len(bcp)):
@@ -386,7 +386,7 @@ def rad(bcp, albedo_sur, latitude, dt):
                                 'azimuth': bcp.loc[k, 'Azimuth'],
                                 'latitude': latitude}
         rad_surf = dm4bem.sol_rad_tilt_surf(weather, surface_orientationS, albedo_sur)
-        Φt.update({str(k+2): rad_surf.sum(axis=1)})
+        Φt.update({str(k + 2): rad_surf.sum(axis=1)})
 
     Φt = pd.DataFrame(Φt)
     # Interpolate weather data for time step dt
@@ -395,6 +395,7 @@ def rad(bcp, albedo_sur, latitude, dt):
     data = data.rename(columns={'temp_air': 'To'})
 
     return data
+
 
 def indoor_rad(bcp_r, TCd, IG):
     Q = TCd['Q']
@@ -411,13 +412,14 @@ def indoor_rad(bcp_r, TCd, IG):
         else:
             print('no change')
 
-    TCd['Q'] = Q               # replace Q in TCd with new Q
+    TCd['Q'] = Q  # replace Q in TCd with new Q
 
     return TCd
 
+
 def u_assembly(TCd, rad_surf_tot):
-    u = np.empty((len(rad_surf_tot), 1))         # create u matrix
-    for i in range(0, TCd.shape[1]):
+    u = np.empty((len(rad_surf_tot), 1))  # create u matrix
+    for i in range(0, TCd.shape[1]-1):
         TCd_i = TCd[str(i)]
         T = TCd_i['T']
         T = T[:, ~np.isnan(T).any(axis=0)]
@@ -438,3 +440,43 @@ def u_assembly(TCd, rad_surf_tot):
             u = np.append(u, Q, axis=1)
 
     return u
+
+
+def assembly(TCd):
+    """
+    Created 2nd November 2021
+
+    Author: Charlie Gerike-Roberts
+
+    Description: The assembly function is used to define how the nodes in the disassembled thermal circuits
+    are merged together.
+
+    Inputs: TCd
+
+    Outputs: AssX
+    """
+    TCd_last_node = np.zeros(len(TCd) - 1)  # define size of matrix for last node in each TC
+    TCd_element_numbers = np.arange(1, len(TCd), 1)  # create vector which contains the number for each element
+
+    # compute number of last node of each thermal circuit and input into thermal circuit sizes matrix
+    for i in range(0, len([TCd_last_node][0])):
+        TCd_last_node[i] = len(TCd[str(i + 1)]['A'][0]) - 1
+
+    print(TCd_last_node)
+
+    IA_nodes = np.arange(len(TCd[str(0)]['A'][0]))  # create vector with the nodes for inside air
+    print(IA_nodes)
+
+    # create assembly matrix
+    AssX = np.zeros((len(IA_nodes), 4))  # define size of AssX matrix
+    for i in range(0, len([AssX][0])):
+        AssX[i, 0] = TCd_element_numbers[i]  # set first column of row to element
+        AssX[i, 1] = TCd_last_node[i]  # set second column to last node of that element
+        AssX[i, 2] = 0  # set third column to inside air element
+        AssX[i, 3] = IA_nodes[i]  # set 4th column to element of inside air which connects to corresponding element
+
+    AssX = AssX.astype(int)
+
+    print(AssX)
+
+    return AssX
