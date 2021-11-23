@@ -181,12 +181,12 @@ def indoor_air(bcp_sur, h, V, Qa, rad_surf_tot):
     G = np.diag(G)
     b = np.zeros(nq)
     C = np.zeros(nt)
-    C[-1] = (1.2 * 1000 * V) / 2  # Capacity air = Density*specific heat*V
+    C[0] = (1.2 * 1000 * V) / 2  # Capacity air = Density*specific heat*V
     C = np.diag(C)
     f = np.zeros(nt)
     f[-1] = 1
     y = np.zeros(nt)
-    y[-1] = 1
+    y[0] = 1
     Q = np.zeros((rad_surf_tot.shape[0], nt))
     Q[0] = Qa
     Q[:, 1:nt] = 'NaN'
@@ -329,23 +329,24 @@ def susp_floor(bcp_r, h, V, rad_surf_tot, uc):
     V, Volume of the room from bcp
     Output: TCd, a dictionary of the all the matrices of one thermal circuit describing a suspended floor
     """
-    nq = 2 * (int(bcp_r['Mesh_1']) + int(bcp_r['Mesh_2']))
-    nt = 2 * (int(bcp_r['Mesh_1']) + int(bcp_r['Mesh_2']))
+    nq = 1 + 2 * (int(bcp_r['Mesh_1']) + int(bcp_r['Mesh_2']))
+    nt = 1 + 2 * (int(bcp_r['Mesh_1']) + int(bcp_r['Mesh_2']))
 
-    A = np.array([[1, 0, 0, 0],
-                  [-1, 1, 0, 0],
-                  [0, -1, 1, 0],
-                  [0, 0, -1, 1]])
+    A = np.array([[1, 0, 0, 0, 0],
+                  [-1, 1, 0, 0, 0],
+                  [0, -1, 1, 0, 0],
+                  [0, 0, -1, 1, 0],
+                  [0, 0, 0, -1, 1]])
     Gw = h * bcp_r['Surface']
     G_cd = bcp_r['conductivity_1'] / bcp_r['Thickness_1'] * bcp_r['Surface']  # wood
     G = np.diag(np.hstack(
-        [Gw['in'], Gw['in'], G_cd, G_cd]))
-    b = np.array([1, 0, 0, 0])
+        [Gw['in'], Gw['in'], Gw['in'], G_cd, G_cd]))
+    b = np.array([1, 0, 0, 0, 0])
     Capacity_w = bcp_r['density_1'] * bcp_r['specific_heat_1'] * bcp_r['Surface'] * bcp_r['Thickness_1']  # wood
     Capacity_a = bcp_r['density_2'] * bcp_r['specific_heat_2'] * V  # air
-    C = np.diag([Capacity_a, 0, Capacity_w, 0])
-    f = np.array([0, 0, 0, 1])
-    y = np.array([0, 0, 0, 0])
+    C = np.diag([0, Capacity_a, 0, Capacity_w, 0])
+    f = np.array([0, 0, 0, 0, 1])
+    y = np.array([0, 0, 0, 0, 0])
 
     Q = np.zeros((rad_surf_tot.shape[0], nt))
     Q[:, 0] = bcp_r['SW_absorptivity_1'] * bcp_r['Surface'] * rad_surf_tot[str(uc)]
@@ -585,7 +586,7 @@ def solver(TCAf, TCAc, TCAh, dt, u, t, Tisp, DeltaT, DeltaBlind, Kpc, Kph, rad_s
     axs[2].set(xlabel='Time [h]',
                ylabel='Heat flows [W]')
     axs[2].legend(loc='upper right')
-    plt.ylim(-1500, 3000)
+    plt.ylim(-1000, 1000)
     fig.tight_layout()
 
     plt.show()

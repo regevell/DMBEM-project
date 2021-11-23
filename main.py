@@ -35,7 +35,7 @@ DeltaT = 5
 DeltaBlind = 2
 WF = 'GBR_ENG_RAF.Lyneham.037400_TMYx.2004-2018.epw'
 t_start = '2000-01-03 12:00:00'
-t_end = '2000-01-04 18:00:00'
+t_end = '2000-03-04 18:00:00'
 
 # Add thermo-physical properties
 bcp = TCM_funcs.thphprop(bc)
