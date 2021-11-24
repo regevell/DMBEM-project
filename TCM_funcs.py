@@ -309,7 +309,7 @@ def window(bcp_r, h, rad_surf_tot, uc):
 
     Q = np.zeros((rad_surf_tot.shape[0], nt))
     IG_surface = bcp_r['Surface'] * rad_surf_tot[str(uc)]
-    IGR = bcp_r['SW_transmittance_1'] * bcp_r['Surface'] * rad_surf_tot[str(uc)]
+    IGR = np.array(bcp_r['SW_transmittance_1'] * bcp_r['Surface'] * rad_surf_tot[str(uc)])
     Q[:, 0] = bcp_r['SW_absorptivity_1'] * IG_surface
     uca = uc + 1
     Q[:, 1:nt] = 'NaN'
