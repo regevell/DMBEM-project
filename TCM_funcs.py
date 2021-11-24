@@ -56,6 +56,7 @@ def thphprop(BCdf):
             glass plate p.993
             Clay tile, hollow p.989
             Wood, oak p.989
+            Soil p.994
 
         EngToolbox Emissivity Coefficient Materials, Glass, pyrex
         EngToolbox Emissivity Coefficient Materials, Clay
@@ -65,14 +66,14 @@ def thphprop(BCdf):
         EngToolbox Absorbed Solar Radiation by Material, Tile, clay red
         EngToolbox Absorbed Solar Radiation by Surface Color, Green, red and brown
         """
-    thphp = {'Material': ['Concrete', 'Insulation', 'Glass', 'Air', 'Tile', 'Wood'],
-             'Density': [2300, 55, 2500, 1.2, None, 720],  # kg/m³
-             'Specific_Heat': [880, 1210, 750, 1000, None, 1255],  # J/kg.K
-             'Conductivity': [1.4, 0.027, 1.4, None, 0.52, 0.16],  # W/m.K
-             'LW_Emissivity': [0.9, 0, 0.9, 0, 0.91, 0.885],
-             'SW_Transmittance': [0, 0, 0.83, 1, 0, 0],
-             'SW_Absorptivity': [0.25, 0.25, 0.1, 0, 0.64, 0.6],
-             'Albedo': [0.75, 0.75, 0.07, 0, 0.36, 0.4]}  # albedo + SW transmission + SW absorptivity = 1
+    thphp = {'Material': ['Concrete', 'Insulation', 'Glass', 'Air', 'Tile', 'Wood', 'soil'],
+             'Density': [2300, 55, 2500, 1.2, None, 720, 2050],  # kg/m³
+             'Specific_Heat': [880, 1210, 750, 1000, None, 1255, 1840],  # J/kg.K
+             'Conductivity': [1.4, 0.027, 1.4, None, 0.52, 0.16, 0.52],  # W/m.K
+             'LW_Emissivity': [0.9, 0, 0.9, 0, 0.91, 0.885, None],
+             'SW_Transmittance': [0, 0, 0.83, 1, 0, 0, 0],
+             'SW_Absorptivity': [0.25, 0.25, 0.1, 0, 0.64, 0.6, None],
+             'Albedo': [0.75, 0.75, 0.07, 0, 0.36, 0.4, None]}  # albedo + SW transmission + SW absorptivity = 1
 
     thphp = pd.DataFrame(thphp)
 
