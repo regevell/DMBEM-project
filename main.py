@@ -58,7 +58,7 @@ for i in range(0, len(bcp)):
     elif bcp.Element_Type[i] == 'SinG':
         TCd_i, uca, IGR = TCM_funcs.window(bcp.loc[i, :], h, rad_surf_tot, uc)
         TCd.update({str(i+2): TCd_i})
-        IG = np.append(IG, IGR, axis=1)                                       # update total radiation coming through windows
+        IG = IGR / 7                                      # update total radiation coming through windows
     elif bcp.Element_Type[i] == 'Suspended Floor':
         TCd_i, uca = TCM_funcs.susp_floor(bcp.loc[i, :], h, V, rad_surf_tot, uc, Tg)
         TCd.update({str(i+2): TCd_i})
