@@ -1,9 +1,9 @@
 ﻿Element_Code,Element_Type,Material_1,Material_2,Material_3,Length,Width,Height,Thickness_1,Thickness_2,Thickness_3,Surface,Volume,Slope,Azimuth
-W1,Solid Wall w/In,Concrete,Insulation,N,N,2,3,0.1,0.1,N,6,18,90,0
+W1,Solid Wall w/In,Concrete,Insulation,N,N,2,3,0.1,0.1,N,6,21,90,0
 W2,Solid Wall w/In,Concrete,Insulation,N,3,N,3,0.1,0.1,N,9,,90,-90
 W3,Solid Wall w/In,Concrete,Insulation,N,N,2,3,0.1,0.1,N,6,,90,180
 W4,Solid Wall w/In,Concrete,Insulation,N,3,N,3,0.1,0.1,N,2.75,,90,90
 G1,DG,Glass,N,N,2.5,N,2.5,0.1,N,N,6.25,,90,90
-R1,Flat Roof w/In,Tile,Insulation,N,3,2,3,0.3,0.3,N,6,,45,180
-R2,Flat Roof w/In,Tile,Insulation,N,3,2,3,0.3,0.3,N,6,,45,0
-F1,Suspended Floor,Air,Wood,N,3,2,3,0.1,0.4,N,6,,0,0
+R1,Flat Roof w/In,Tile,Insulation,N,3,2,N,0.3,0.3,N,1.414213562,1.5,45,180
+R2,Flat Roof w/In,Tile,Insulation,N,3,2,N,0.3,0.3,N,1.414213562,1.5,45,0
+F1,Suspended Floor,Air,Wood,Soil,3,2,3,0.1,0.4,10,6,,0,0
