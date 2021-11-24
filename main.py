@@ -20,9 +20,7 @@ bc = TCM_funcs.building_characteristics()
 # Define Inputs
 Kpc = 300
 Kpf = 1e-3
-Kph = 1e3                                                                     # factor for HVAC
-dt = 40                                                                       # s - time step for solver
-T_set = pd.DataFrame([{'cooling': 26, 'heating': 20}])                        # C - temperature set points
+dt = 4                                                                        # s - time step for solerT_set = pd.DataFrame([{'cooling': 26, 'heating': 20}])                        # C - temperature set points
 Tm = 20 + 273.15                                                              # K - Mean temperature for radiative exchange
 ACH = 1                                                                       # h*-1 - no. of air changes in volume per hour
 h = pd.DataFrame([{'in': 4., 'out': 10}])                                     # W/m² K - convection coefficients
@@ -36,7 +34,7 @@ DeltaT = 5
 DeltaBlind = 2
 WF = 'GBR_ENG_RAF.Lyneham.037400_TMYx.2004-2018.epw'
 t_start = '2000-01-03 12:00:00'
-t_end = '2000-01-04 18:00:00'
+t_end = '2000-02-04 18:00:00'
 Tg = 10                                                                       # ground temperature
 
 # Add thermo-physical properties

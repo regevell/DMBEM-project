@@ -611,7 +611,7 @@ def solver(TCAf, TCAc, TCAh, dt, u, u_c, t, Tisp, DeltaT, DeltaBlind, Kpc, Kph, 
     axs[2].set(xlabel='Time [h]',
                ylabel='Heat flows [W]')
     axs[2].legend(loc='upper right')
-    plt.ylim(-500, 2000)
+    plt.ylim(-1500, 3000)
     fig.tight_layout()
 
     plt.show()
