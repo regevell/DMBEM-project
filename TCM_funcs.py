@@ -18,7 +18,7 @@ def building_characteristics():
     and create a data frame from it.
     """
 
-    bc = pd.read_csv(r'Building Characteristics_Test.csv', na_values=["N"], keep_default_na=True)
+    bc = pd.read_csv(r'Building Characteristics.csv', na_values=["N"], keep_default_na=True)
 
     return bc
 

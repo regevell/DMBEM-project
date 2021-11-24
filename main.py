@@ -26,7 +26,7 @@ T_set = pd.DataFrame([{'cooling': 26, 'heating': 20}])                        # 
 Tm = 20 + 273.15                                                              # K - Mean temperature for radiative exchange
 ACH = 1                                                                       # h*-1 - no. of air changes in volume per hour
 h = pd.DataFrame([{'in': 4., 'out': 10}])                                     # W/m² K - convection coefficients
-V = bc.Volume[3]                                                              # m³
+V = bc.Volume[0]                                                              # m³
 Vdot = V * ACH / 3600                                                         # m³/s - volume flow rate due to air changes
 albedo_sur = 0.2                                                              # albedo for the surroundings
 latitude = 45
@@ -55,7 +55,7 @@ for i in range(0, len(bcp)):
     if bcp.Element_Type[i] == 'Solid Wall w/In':
         TCd_i, uca = TCM_funcs.solid_wall_w_ins(bcp.loc[i, :], h, rad_surf_tot, uc)
         TCd.update({str(i+2): TCd_i})
-    elif bcp.Element_Type[i] == 'SinG':
+    elif bcp.Element_Type[i] == 'DG':
         TCd_i, uca, IGR = TCM_funcs.window(bcp.loc[i, :], h, rad_surf_tot, uc)
         TCd.update({str(i+2): TCd_i})
         IG = IGR / 7                                      # update total radiation coming through windows
