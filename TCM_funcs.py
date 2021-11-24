@@ -178,7 +178,7 @@ def indoor_air(bcp_sur, h, V, Qa, rad_surf_tot):
 
     G = np.zeros(nq)
     for i in range(0, len(G)):
-        G[i] = h['in'] * bcp_sur[i]
+        G[i] = h['in'] * bcp_sur[i]*1.2
     G = np.diag(G)
     b = np.zeros(nq)
     C = np.zeros(nt)
