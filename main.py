@@ -8,6 +8,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import TCM_funcs
 import dm4bem
+import copy
 
 # global constants
 σ = 5.67e-8     # W/m².K⁴ Stefan-Bolzmann constant
@@ -20,7 +21,7 @@ bc = TCM_funcs.building_characteristics()
 Kpc = 500
 Kpf = 1e-3
 Kph = 1e4                                                                     # factor for HVAC
-dt = 5                                                                        # s - time step for solver
+dt = 4                                                                        # s - time step for solver
 T_set = pd.DataFrame([{'cooling': 26, 'heating': 20}])                        # C - temperature set points
 Tm = 20 + 273.15                                                              # K - Mean temperature for radiative exchange
 ACH = 1                                                                       # h*-1 - no. of air changes in volume per hour
@@ -29,13 +30,14 @@ V = bc.Volume[3]                                                              # 
 Vdot = V * ACH / 3600                                                         # m³/s - volume flow rate due to air changes
 albedo_sur = 0.2                                                              # albedo for the surroundings
 latitude = 45
-Qa = 0                                                                        # auxiliary heat flow
+Qa = 500                                                                      # auxiliary heat flow
 Tisp = 20
 DeltaT = 5
 DeltaBlind = 2
 WF = 'GBR_ENG_RAF.Lyneham.037400_TMYx.2004-2018.epw'
 t_start = '2000-01-03 12:00:00'
-t_end = '2000-03-04 18:00:00'
+t_end = '2000-01-04 18:00:00'
+Tg = 10                     # ground temperature
 
 # Add thermo-physical properties
 bcp = TCM_funcs.thphprop(bc)
@@ -58,7 +60,7 @@ for i in range(0, len(bcp)):
         TCd.update({str(i+2): TCd_i})
         IG = IG+IGR                                         # update total radiation coming through windows
     elif bcp.Element_Type[i] == 'Suspended Floor':
-        TCd_i, uca = TCM_funcs.susp_floor(bcp.loc[i, :], h, V, rad_surf_tot, uc)
+        TCd_i, uca = TCM_funcs.susp_floor(bcp.loc[i, :], h, V, rad_surf_tot, uc, Tg)
         TCd.update({str(i+2): TCd_i})
     elif bcp.Element_Type[i] == 'Flat Roof w/In':
         TCd_i, uca = TCM_funcs.flat_roof_w_in(bcp.loc[i, :], h, rad_surf_tot, uc)
@@ -66,20 +68,33 @@ for i in range(0, len(bcp)):
     uc = uca                                                    # update heat flow tracker
 # TCd = pd.DataFrame(TCd)
 
+TCd_f = copy.deepcopy(TCd)
+
 for i in range(0, len(bcp)):
     if bcp.Element_Type[i] == 'Solid Wall w/In':
-        TCd_i = TCM_funcs.indoor_rad(bcp.loc[i, :], TCd[str(i+2)], IG)
-        TCd[str(i+2)] = TCd_i
+        TCd_i = TCM_funcs.indoor_rad(bcp.loc[i, :], TCd_f[str(i+2)], IG)
+        TCd_f[str(i+2)] = TCd_i
     elif bcp.Element_Type[i] == 'Suspended Floor':
-        TCd_i = TCM_funcs.indoor_rad(bcp.loc[i, :], TCd[str(i+2)], IG)
-        TCd[str(i + 2)] = TCd_i
+        TCd_i = TCM_funcs.indoor_rad(bcp.loc[i, :], TCd_f[str(i+2)], IG)
+        TCd_f[str(i + 2)] = TCd_i
     elif bcp.Element_Type[i] == 'Flat Roof w/In':
-        TCd_i = TCM_funcs.indoor_rad(bcp.loc[i, :], TCd[str(i+2)], IG)
-        TCd[str(i + 2)] = TCd_i
+        TCd_i = TCM_funcs.indoor_rad(bcp.loc[i, :], TCd_f[str(i+2)], IG)
+        TCd_f[str(i + 2)] = TCd_i
 
-TCd_f = dict(TCd)
-TCd_c = dict(TCd)
-TCd_h = dict(TCd)
+TCd_h = copy.deepcopy(TCd_f)
+TCd_c = copy.deepcopy(TCd)
+
+for i in range(0, len(bcp)):
+    if bcp.Element_Type[i] == 'Solid Wall w/In':
+        TCd_i = TCM_funcs.indoor_rad_c(TCd_c[str(i+2)])
+        TCd_c[str(i+2)] = TCd_i
+    elif bcp.Element_Type[i] == 'Suspended Floor':
+        TCd_i = TCM_funcs.indoor_rad_c(TCd_c[str(i+2)])
+        TCd_c[str(i + 2)] = TCd_i
+    elif bcp.Element_Type[i] == 'Flat Roof w/In':
+        TCd_i = TCM_funcs.indoor_rad_c(TCd_c[str(i+2)])
+        TCd_c[str(i + 2)] = TCd_i
+
 TCd_c[str(1)] = TCM_funcs.ventilation(V, Vdot, Kpc, T_set, rad_surf_tot)
 TCd_h[str(1)] = TCM_funcs.ventilation(V, Vdot, Kph, T_set, rad_surf_tot)
 
@@ -88,6 +103,7 @@ TCd_c = pd.DataFrame(TCd_c)
 TCd_h = pd.DataFrame(TCd_h)
 
 u, rad_surf_tot = TCM_funcs.u_assembly(TCd_f, rad_surf_tot)
+u_c, rad_surf_tot = TCM_funcs.u_assembly_c(TCd_c, rad_surf_tot)
 AssX = TCM_funcs.assembly(TCd_f)
 
 TCd_f = pd.DataFrame.to_dict(TCd_f)
@@ -98,4 +114,4 @@ TCAf = dm4bem.TCAss(TCd_f, AssX)
 TCAc = dm4bem.TCAss(TCd_c, AssX)
 TCAh = dm4bem.TCAss(TCd_h, AssX)
 
-TCM_funcs.solver(TCAf, TCAc, TCAh, dt, u, t, Tisp, DeltaT, DeltaBlind, Kpc, Kph, rad_surf_tot)
+TCM_funcs.solver(TCAf, TCAc, TCAh, dt, u, u_c, t, Tisp, DeltaT, DeltaBlind, Kpc, Kph, rad_surf_tot)
