@@ -18,7 +18,7 @@ import copy
 bc = TCM_funcs.building_characteristics()
 
 # Define Inputs
-Kpc = 500
+Kpc = 50
 Kpf = 1e-3
 Kph = 1e4                                                                     # factor for HVAC
 dt = 4                                                                        # s - time step for solver
@@ -26,11 +26,11 @@ T_set = pd.DataFrame([{'cooling': 26, 'heating': 20}])                        # 
 Tm = 20 + 273.15                                                              # K - Mean temperature for radiative exchange
 ACH = 1                                                                       # h*-1 - no. of air changes in volume per hour
 h = pd.DataFrame([{'in': 4., 'out': 10}])                                     # W/m² K - convection coefficients
-V = bc.Volume[0]                                                              # m³
+V = bc.Volume[3]                                                              # m³
 Vdot = V * ACH / 3600                                                         # m³/s - volume flow rate due to air changes
 albedo_sur = 0.2                                                              # albedo for the surroundings
 latitude = 45
-Qa = 500                                                                      # auxiliary heat flow
+Qa = 100                                                                      # auxiliary heat flow
 Tisp = 20
 DeltaT = 5
 DeltaBlind = 2
@@ -106,9 +106,17 @@ u, rad_surf_tot = TCM_funcs.u_assembly(TCd_f, rad_surf_tot)
 u_c, rad_surf_tot = TCM_funcs.u_assembly_c(TCd_c, rad_surf_tot)
 AssX = TCM_funcs.assembly(TCd_f)
 
+TCd_f = TCd_f.drop('Q')
+TCd_f = TCd_f.drop('T')
+TCd_c = TCd_c.drop('Q')
+TCd_c = TCd_c.drop('T')
+TCd_h = TCd_h.drop('Q')
+TCd_h = TCd_h.drop('T')
+
 TCd_f = pd.DataFrame.to_dict(TCd_f)
 TCd_c = pd.DataFrame.to_dict(TCd_c)
 TCd_h = pd.DataFrame.to_dict(TCd_h)
+
 
 TCAf = dm4bem.TCAss(TCd_f, AssX)
 TCAc = dm4bem.TCAss(TCd_c, AssX)
