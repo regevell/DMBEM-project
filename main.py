@@ -50,7 +50,7 @@ TCd = {}
 TCd.update({str(0): TCM_funcs.indoor_air(bcp.Surface, h, V, Qa, rad_surf_tot)})  # inside air
 TCd.update({str(1): TCM_funcs.ventilation(V, Vdot, Kpf, T_set, rad_surf_tot)})  # ventilation and heating
 uc = 2                                                          # variable to track how many heat flows have been used
-IG = 0                                                          # set the radiation entering through windows to zero
+IG = np.zeros([rad_surf_tot.shape[0], 1])                                                          # set the radiation entering through windows to zero
 for i in range(0, len(bcp)):
     if bcp.Element_Type[i] == 'Solid Wall w/In':
         TCd_i, uca = TCM_funcs.solid_wall_w_ins(bcp.loc[i, :], h, rad_surf_tot, uc)
@@ -58,7 +58,7 @@ for i in range(0, len(bcp)):
     elif bcp.Element_Type[i] == 'SinG':
         TCd_i, uca, IGR = TCM_funcs.window(bcp.loc[i, :], h, rad_surf_tot, uc)
         TCd.update({str(i+2): TCd_i})
-        IG = IG+IGR                                         # update total radiation coming through windows
+        IG = np.append(IG, IGR, axis=1)                                       # update total radiation coming through windows
     elif bcp.Element_Type[i] == 'Suspended Floor':
         TCd_i, uca = TCM_funcs.susp_floor(bcp.loc[i, :], h, V, rad_surf_tot, uc, Tg)
         TCd.update({str(i+2): TCd_i})
