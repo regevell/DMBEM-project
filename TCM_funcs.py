@@ -122,11 +122,6 @@ def thphprop(BCdf):
 
 
 def rad(bcp, albedo_sur, latitude, dt, WF, t_start, t_end):
-    """
-    Created on Wed Oct 27 15:19:32 2021
-
-    @author: ellio
-    """
     # Simulation with weather data
     # ----------------------------
     filename = WF
@@ -415,8 +410,6 @@ def indoor_rad(bcp_r, TCd, IG):
                     Q[:, i] = bcp_r['SW_absorptivity_2'] * IG
             else:
                 Q[:, i] = bcp_r['SW_absorptivity_3'] * IG
-        else:
-            print('no change')
 
     TCd['Q'] = Q  # replace Q in TCd with new Q
 
@@ -428,8 +421,6 @@ def indoor_rad_c(TCd_c):
     for i in range(0, lim):
         if Q[0, i] == -1:
             Q[:, i] = 0
-        else:
-            print('No Change')
 
     TCd_c['Q'] = Q  # replace Q in TCd with new Q
 
@@ -490,10 +481,6 @@ def u_assembly_c(TCd_c, rad_surf_tot):
 
 def assembly(TCd):
     """
-    Created 2nd November 2021
-
-    Author: Charlie Gerike-Roberts
-
     Description: The assembly function is used to define how the nodes in the disassembled thermal circuits
     are merged together.
 
