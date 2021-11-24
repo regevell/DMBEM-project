@@ -18,9 +18,11 @@ import copy
 bc = TCM_funcs.building_characteristics()
 
 # Define Inputs
-Kpc = 300
+Kpc = 500
 Kpf = 1e-3
-dt = 4                                                                        # s - time step for solerT_set = pd.DataFrame([{'cooling': 26, 'heating': 20}])                        # C - temperature set points
+Kph = 1e3
+dt = 40            
+T_set = pd.DataFrame([{'cooling': 26, 'heating': 20}])                                                            # s - time step for solerT_set = pd.DataFrame([{'cooling': 26, 'heating': 20}])                        # C - temperature set points
 Tm = 20 + 273.15                                                              # K - Mean temperature for radiative exchange
 ACH = 1                                                                       # h*-1 - no. of air changes in volume per hour
 h = pd.DataFrame([{'in': 4., 'out': 10}])                                     # W/m² K - convection coefficients
@@ -28,13 +30,13 @@ V = bc.Volume[0]                                                              # 
 Vdot = V * ACH / 3600                                                         # m³/s - volume flow rate due to air changes
 albedo_sur = 0.2                                                              # albedo for the surroundings
 latitude = 45
-Qa = 200                                                                      # auxiliary heat flow
+Qa = 100                                                                      # auxiliary heat flow
 Tisp = 20
 DeltaT = 5
 DeltaBlind = 2
 WF = 'GBR_ENG_RAF.Lyneham.037400_TMYx.2004-2018.epw'
 t_start = '2000-01-03 12:00:00'
-t_end = '2000-02-04 18:00:00'
+t_end = '2000-01-04 18:00:00'
 Tg = 10                                                                       # ground temperature
 
 # Add thermo-physical properties
