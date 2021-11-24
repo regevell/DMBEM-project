@@ -185,11 +185,11 @@ def indoor_air(bcp_sur, h, V, Qa, rad_surf_tot):
     C[0] = (1.2 * 1000 * V) / 2  # Capacity air = Density*specific heat*V
     C = np.diag(C)
     f = np.zeros(nt)
-    f[-1] = 1
+    f[0] = 1
     y = np.zeros(nt)
     y[0] = 1
     Q = np.zeros((rad_surf_tot.shape[0], nt))
-    Q[0] = Qa
+    Q[:, 0] = Qa
     Q[:, 1:nt] = 'NaN'
     T = np.zeros((rad_surf_tot.shape[0], nq))
     T[:, 0:nq] = 'NaN'
@@ -214,10 +214,10 @@ def ventilation(V, V_dot, Kpf, T_set, rad_surf_tot):
     G = np.diag(np.hstack([Gv, Kpf]))
     b = np.array([1, 1])
     C = np.array([(1.2 * 1000 * V) / 2])
-    f = 1
+    f = 0
     y = 1
     Q = np.zeros((rad_surf_tot.shape[0], 1))
-    Q[:, :] = 'NaN'
+    Q[:, 0] = 'NaN'
     T = np.zeros((rad_surf_tot.shape[0], 2))
     T[:, 0] = rad_surf_tot['To']
     T[:, 1] = T_set['heating']
@@ -323,7 +323,7 @@ def window(bcp_r, h, rad_surf_tot, uc):
     return TCd, uca, IGR
 
 
-def susp_floor(bcp_r, h, V, rad_surf_tot, uc):
+def susp_floor(bcp_r, h, V, rad_surf_tot, uc, Tg):
     """Input:
     bcp_r, one row of the bcp dataframe
     h, convection dataframe
@@ -339,7 +339,7 @@ def susp_floor(bcp_r, h, V, rad_surf_tot, uc):
                   [0, 0, -1, 1, 0],
                   [0, 0, 0, -1, 1]])
     Gw = h * bcp_r['Surface']
-    G_cd = bcp_r['conductivity_1'] / bcp_r['Thickness_1'] * bcp_r['Surface']  # wood
+    G_cd = bcp_r['conductivity_2'] / bcp_r['Thickness_2'] * bcp_r['Surface']  # wood
     G = np.diag(np.hstack(
         [Gw['in'], Gw['in'], Gw['in'], G_cd, G_cd]))
     b = np.array([1, 0, 0, 0, 0])
@@ -356,7 +356,7 @@ def susp_floor(bcp_r, h, V, rad_surf_tot, uc):
     Q[:, 0:(nt - 1)] = 'NaN'
 
     T = np.zeros((rad_surf_tot.shape[0], nq))
-    T[:, 0] = rad_surf_tot['To']
+    T[:, 0] = Tg
     T[:, 1:nq] = 'NaN'
 
     TCd = {'A': A, 'G': G, 'b': b, 'C': C, 'f': f, 'y': y, 'Q': Q, 'T': T}
@@ -370,8 +370,8 @@ def flat_roof_w_in(bcp_r, h, rad_surf_tot, uc):
     h, convection dataframe
     Output: TCd, a dictionary of the all the matrices of one thermal circuit describing a flat roof with insulation
     """
-    nq = 2 * (int(bcp_r['Mesh_1']))
-    nt = 2 * (int(bcp_r['Mesh_1']))
+    nq = 1 + 2 * (int(bcp_r['Mesh_1']))
+    nt = 1 + 2 * (int(bcp_r['Mesh_1']))
 
     A = np.array([[-1, 0, 0],
                   [-1, 1, 0],
@@ -422,6 +422,19 @@ def indoor_rad(bcp_r, TCd, IG):
 
     return TCd
 
+def indoor_rad_c(TCd_c):
+    Q = TCd_c['Q']
+    lim = np.shape(Q)[1]
+    for i in range(0, lim):
+        if Q[0, i] == -1:
+            Q[:, i] = 0
+        else:
+            print('No Change')
+
+    TCd_c['Q'] = Q  # replace Q in TCd with new Q
+
+    return TCd_c
+
 
 def u_assembly(TCd, rad_surf_tot):
     rad_surf_tot = rad_surf_tot.loc[:, rad_surf_tot.any()]
@@ -449,6 +462,30 @@ def u_assembly(TCd, rad_surf_tot):
     u = pd.DataFrame(u)
 
     return u, rad_surf_tot
+
+def u_assembly_c(TCd_c, rad_surf_tot):
+    rad_surf_tot = rad_surf_tot.loc[:, rad_surf_tot.any()]
+    u_c = np.empty((len(rad_surf_tot), 1))  # create u matrix
+    for i in range(0, TCd_c.shape[1]):
+        TCd_i = TCd_c[str(i)]
+        T = TCd_i['T']
+        T = T[:, ~np.isnan(T).any(axis=0)]
+        if np.shape(T)[1] == 0:
+            print('No Temp')
+        else:
+            u_c = np.append(u_c, T, axis=1)
+
+    u_c = np.delete(u_c, 0, 1)
+
+    for j in range(0, TCd_c.shape[1]):
+        TCd_j = TCd_c[str(j)]
+        Q = TCd_j['Q']
+        Q = Q[:, ~np.isnan(Q).any(axis=0)]
+        u_c = np.append(u_c, Q, axis=1)
+
+    u_c = pd.DataFrame(u_c)
+
+    return u_c, rad_surf_tot
 
 
 def assembly(TCd):
@@ -491,7 +528,7 @@ def assembly(TCd):
     return AssX
 
 
-def solver(TCAf, TCAc, TCAh, dt, u, t, Tisp, DeltaT, DeltaBlind, Kpc, Kph, rad_surf_tot):
+def solver(TCAf, TCAc, TCAh, dt, u, u_c, t, Tisp, DeltaT, DeltaBlind, Kpc, Kph, rad_surf_tot):
     [Af, Bf, Cf, Df] = dm4bem.tc2ss(TCAf['A'], TCAf['G'], TCAf['b'], TCAf['C'], TCAf['f'], TCAf['y'])
     [Ac, Bc, Cc, Dc] = dm4bem.tc2ss(TCAc['A'], TCAc['G'], TCAc['b'], TCAc['C'], TCAc['f'], TCAc['y'])
     [Ah, Bh, Ch, Dh] = dm4bem.tc2ss(TCAh['A'], TCAh['G'], TCAh['b'], TCAh['C'], TCAh['f'], TCAh['y'])
@@ -552,23 +589,23 @@ def solver(TCAf, TCAc, TCAh, dt, u, t, Tisp, DeltaT, DeltaBlind, Kpc, Kph, rad_s
     I = np.eye(n_tC)
     for k in range(u.shape[0] - 1):
         if y[k] > Tisp[k] + DeltaBlind:
-            u.iloc[k, 7] = 0
-            u.iloc[k, 11] = 0
-            u.iloc[k, 12] = 0
+            us = u_c
+        else:
+            us = u
         if y[k] > DeltaT + Tisp[k]:
             temp_exp[:, k + 1] = (I + dt * Ac) @ temp_exp[:, k] \
-                                 + dt * Bc @ u.iloc[k, :]
-            y[k + 1] = Cc @ temp_exp[:, k + 1] + Dc @ u.iloc[k + 1]
+                                 + dt * Bc @ us.iloc[k, :]
+            y[k + 1] = Cc @ temp_exp[:, k + 1] + Dc @ us.iloc[k + 1]
             qHVAC[k + 1] = Kpc * (Tisp[k + 1] - y[k + 1])
-        if y[k] < Tisp[k]:
+        elif y[k] < Tisp[k]:
             temp_exp[:, k + 1] = (I + dt * Ah) @ temp_exp[:, k] \
-                                 + dt * Bh @ u.iloc[k, :]
-            y[k + 1] = Ch @ temp_exp[:, k + 1] + Dh @ u.iloc[k + 1]
+                                 + dt * Bh @ us.iloc[k, :]
+            y[k + 1] = Ch @ temp_exp[:, k + 1] + Dh @ us.iloc[k + 1]
             qHVAC[k + 1] = Kph * (Tisp[k + 1] - y[k + 1])
         else:
             temp_exp[:, k + 1] = (I + dt * Af) @ temp_exp[:, k] \
-                                 + dt * Bf @ u.iloc[k, :]
-            y[k + 1] = Cf @ temp_exp[:, k + 1] + Df @ u.iloc[k]
+                                 + dt * Bf @ us.iloc[k, :]
+            y[k + 1] = Cf @ temp_exp[:, k + 1] + Df @ us.iloc[k]
             qHVAC[k + 1] = 0
 
     # plot indoor and outdoor temperature
@@ -587,7 +624,7 @@ def solver(TCAf, TCAc, TCAh, dt, u, t, Tisp, DeltaT, DeltaBlind, Kpc, Kph, rad_s
     axs[2].set(xlabel='Time [h]',
                ylabel='Heat flows [W]')
     axs[2].legend(loc='upper right')
-    plt.ylim(-1000, 1000)
+    plt.ylim(-1500, 1000)
     fig.tight_layout()
 
     plt.show()
