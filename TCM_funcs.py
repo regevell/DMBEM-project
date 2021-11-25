@@ -66,7 +66,7 @@ def thphprop(BCdf):
         EngToolbox Absorbed Solar Radiation by Material, Tile, clay red
         EngToolbox Absorbed Solar Radiation by Surface Color, Green, red and brown
         """
-    thphp = {'Material': ['Concrete', 'Insulation', 'Glass', 'Air', 'Tile', 'Wood', 'soil'],
+    thphp = {'Material': ['Concrete', 'Insulation', 'Glass', 'Air', 'Tile', 'Wood', 'Soil'],
              'Density': [2300, 55, 2500, 1.2, None, 720, 2050],  # kg/m³
              'Specific_Heat': [880, 1210, 750, 1000, None, 1255, 1840],  # J/kg.K
              'Conductivity': [1.4, 0.027, 1.4, None, 0.52, 0.16, 0.52],  # W/m.K
@@ -325,8 +325,8 @@ def susp_floor(bcp_r, h, V, rad_surf_tot, uc, Tg):
     V, Volume of the room from bcp
     Output: TCd, a dictionary of the all the matrices of one thermal circuit describing a suspended floor
     """
-    nq = 1 + 2 * (int(bcp_r['Mesh_1']) + int(bcp_r['Mesh_2']))
-    nt = 1 + 2 * (int(bcp_r['Mesh_1']) + int(bcp_r['Mesh_2']))
+    nq = 1 + 2 * (int(bcp_r['Mesh_2']) + int(bcp_r['Mesh_3']))
+    nt = 1 + 2 * (int(bcp_r['Mesh_2']) + int(bcp_r['Mesh_3']))
 
     A = np.array([[1, 0, 0, 0, 0],
                   [-1, 1, 0, 0, 0],
@@ -334,18 +334,19 @@ def susp_floor(bcp_r, h, V, rad_surf_tot, uc, Tg):
                   [0, 0, -1, 1, 0],
                   [0, 0, 0, -1, 1]])
     Gw = h * bcp_r['Surface']
-    G_cd = bcp_r['conductivity_2'] / bcp_r['Thickness_2'] * bcp_r['Surface']  # wood
+    G_cd = bcp_r['conductivity_3'] / bcp_r['Thickness_3'] * bcp_r['Surface']  # wood
+    G_cd_soil = bcp_r['conductivity_1'] / bcp_r['Thickness_1'] * bcp_r['Surface']
     G = np.diag(np.hstack(
-        [Gw['in'], Gw['in'], Gw['in'], G_cd, G_cd]))
+        [G_cd_soil, Gw['in'], Gw['in'], G_cd, G_cd]))
     b = np.array([1, 0, 0, 0, 0])
-    Capacity_w = bcp_r['density_1'] * bcp_r['specific_heat_1'] * bcp_r['Surface'] * bcp_r['Thickness_1']  # wood
+    Capacity_w = bcp_r['density_3'] * bcp_r['specific_heat_3'] * bcp_r['Surface'] * bcp_r['Thickness_3']  # wood
     Capacity_a = bcp_r['density_2'] * bcp_r['specific_heat_2'] * V  # air
     C = np.diag([0, Capacity_a, 0, Capacity_w, 0])
     f = np.array([0, 0, 0, 0, 1])
     y = np.array([0, 0, 0, 0, 0])
 
     Q = np.zeros((rad_surf_tot.shape[0], nt))
-    Q[:, 0] = bcp_r['SW_absorptivity_1'] * bcp_r['Surface'] * rad_surf_tot[str(uc)]
+    Q[:, 0] = bcp_r['SW_absorptivity_3'] * bcp_r['Surface'] * rad_surf_tot[str(uc)]
     Q[:, (nt - 1)] = -1
     uca = uc + 1
     Q[:, 0:(nt - 1)] = 'NaN'
