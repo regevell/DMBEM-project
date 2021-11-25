@@ -37,7 +37,8 @@ DeltaBlind = 2
 WF = 'GBR_ENG_RAF.Lyneham.037400_TMYx.2004-2018.epw'
 t_start = '2000-01-03 12:00:00'
 t_end = '2000-01-04 18:00:00'
-Tg = 10                                                                       # ground temperature
+Tg = 10                                                                    # ground temperature
+IR_Surf = 7                                                                 # number of indoor radiation surfaces
 
 # Add thermo-physical properties
 bcp = TCM_funcs.thphprop(bc)
@@ -58,7 +59,7 @@ for i in range(0, len(bcp)):
     elif bcp.Element_Type[i] == 'DG':
         TCd_i, uca, IGR = TCM_funcs.window(bcp.loc[i, :], h, rad_surf_tot, uc)
         TCd.update({str(i+2): TCd_i})
-        IG = IGR / 7                                                            # update total radiation coming through windows
+        IG = IG + IGR                                                         # update total radiation coming through windows
     elif bcp.Element_Type[i] == 'Suspended Floor':
         TCd_i, uca = TCM_funcs.susp_floor(bcp.loc[i, :], h, V, rad_surf_tot, uc, Tg)
         TCd.update({str(i+2): TCd_i})
@@ -66,6 +67,8 @@ for i in range(0, len(bcp)):
         TCd_i, uca = TCM_funcs.flat_roof_w_in(bcp.loc[i, :], h, rad_surf_tot, uc)
         TCd.update({str(i+2): TCd_i})
     uc = uca                                                                    # update heat flow tracker
+
+IG = IG / IR_Surf                                                           #divide total indoor radiation by number of indoor surfaces
 
 TCd_f = copy.deepcopy(TCd)
 

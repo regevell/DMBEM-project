@@ -18,7 +18,7 @@ def building_characteristics():
     and create a data frame from it.
     """
 
-    bc = pd.read_csv(r'Building Characteristics_real.csv', na_values=["N"], keep_default_na=True)
+    bc = pd.read_csv(r'Building Characteristics_large.csv', na_values=["N"], keep_default_na=True)
 
     return bc
 
@@ -304,7 +304,9 @@ def window(bcp_r, h, rad_surf_tot, uc):
 
     Q = np.zeros((rad_surf_tot.shape[0], nt))
     IG_surface = bcp_r['Surface'] * rad_surf_tot[str(uc)]
-    IGR = np.array(bcp_r['SW_transmittance_1'] * bcp_r['Surface'] * rad_surf_tot[str(uc)])
+    IGR = np.zeros([rad_surf_tot.shape[0], 1])
+    IGR = IGR[:, 0] + (bcp_r['SW_transmittance_1'] * bcp_r['Surface'] * rad_surf_tot[str(uc)])
+    IGR = np.array([IGR]).T
     Q[:, 0] = bcp_r['SW_absorptivity_1'] * IG_surface
     uca = uc + 1
     Q[:, 1:nt] = 'NaN'
@@ -406,12 +408,14 @@ def indoor_rad(bcp_r, TCd, IG):
         if Q[0, i] == -1:
             if np.isnan(bcp_r['SW_absorptivity_3']):
                 if np.isnan(bcp_r['SW_absorptivity_2']):
-                    Q[:, i] = bcp_r['SW_absorptivity_1'] * IG
+                    x = bcp_r['SW_absorptivity_1'] * IG
+                    Q[:, i] = x[:, 0]
                 else:
-                    Q[:, i] = bcp_r['SW_absorptivity_2'] * IG
+                    x = bcp_r['SW_absorptivity_2'] * IG
+                    Q[:, i] = x[:, 0]
             else:
-                Q[:, i] = bcp_r['SW_absorptivity_3'] * IG
-
+                x = bcp_r['SW_absorptivity_3'] * IG
+                Q[:, i] = x[:, 0]
     TCd['Q'] = Q  # replace Q in TCd with new Q
 
     return TCd
