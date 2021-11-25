@@ -577,7 +577,7 @@ def solver(TCAf, TCAc, TCAh, dt, u, u_c, t, Tisp, DeltaT, DeltaBlind, Kpc, Kph, 
     I = np.eye(n_tC)
     for k in range(u.shape[0] - 1):
         if y[k] > Tisp[k] + DeltaBlind:
-            us = u              #_c
+            us = u_c
         else:
             us = u
         if y[k] > DeltaT + Tisp[k]:
