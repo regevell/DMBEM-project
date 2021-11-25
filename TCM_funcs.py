@@ -334,7 +334,7 @@ def susp_floor(bcp_r, h, V, rad_surf_tot, uc, Tg):
                   [0, 0, -1, 1, 0],
                   [0, 0, 0, -1, 1]])
     Gw = h * bcp_r['Surface']
-    G_cd = bcp_r['conductivity_1'] / bcp_r['Thickness_1'] * bcp_r['Surface']  # wood
+    G_cd = bcp_r['conductivity_2'] / bcp_r['Thickness_2'] * bcp_r['Surface']  # wood
     G = np.diag(np.hstack(
         [Gw['in'], Gw['in'], Gw['in'], G_cd, G_cd]))
     b = np.array([1, 0, 0, 0, 0])
@@ -576,7 +576,7 @@ def solver(TCAf, TCAc, TCAh, dt, u, u_c, t, Tisp, DeltaT, DeltaBlind, Kpc, Kph, 
     I = np.eye(n_tC)
     for k in range(u.shape[0] - 1):
         if y[k] > Tisp[k] + DeltaBlind:
-            us = u_c
+            us = u              #_c
         else:
             us = u
         if y[k] > DeltaT + Tisp[k]:

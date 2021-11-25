@@ -21,7 +21,7 @@ bc = TCM_funcs.building_characteristics()
 Kpc = 500
 Kpf = 1e-3
 Kph = 1e4
-dt = 40            
+dt = 40
 T_set = pd.DataFrame([{'cooling': 26, 'heating': 20}])                                                            # s - time step for solerT_set = pd.DataFrame([{'cooling': 26, 'heating': 20}])                        # C - temperature set points
 Tm = 20 + 273.15                                                              # K - Mean temperature for radiative exchange
 ACH = 1                                                                       # h*-1 - no. of air changes in volume per hour
@@ -35,8 +35,8 @@ Tisp = 20
 DeltaT = 5
 DeltaBlind = 2
 WF = 'GBR_ENG_RAF.Lyneham.037400_TMYx.2004-2018.epw'
-t_start = '2000-01-03 12:00:00'
-t_end = '2000-01-04 18:00:00'
+t_start = '2000-06-01 12:00:00'
+t_end = '2000-08-01 18:00:00'
 Tg = 10                                                                       # ground temperature
 
 # Add thermo-physical properties
