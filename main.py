@@ -20,7 +20,7 @@ bc = TCM_funcs.building_characteristics()
 # Define Inputs
 Kpc = 500
 Kpf = 1e-3
-Kph = 1e3
+Kph = 1e4
 dt = 40            
 T_set = pd.DataFrame([{'cooling': 26, 'heating': 20}])                                                            # s - time step for solerT_set = pd.DataFrame([{'cooling': 26, 'heating': 20}])                        # C - temperature set points
 Tm = 20 + 273.15                                                              # K - Mean temperature for radiative exchange
