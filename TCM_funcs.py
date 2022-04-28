@@ -130,7 +130,7 @@ def rad(bcp, albedo_sur, latitude, dt, WF, t_start, t_end):
 
     # Read weather data from Energyplus .epw file
     [data, meta] = dm4bem.read_epw(filename, coerce_year=None)
-    weather = data[["temp_air", "dir_n_rad", "dif_h_rad"]]
+    weather = data[["temp_air", "relative_humidity", "dir_n_rad", "dif_h_rad"]]
     del data
     weather.index = weather.index.map(lambda t: t.replace(year=2000))
     weather = weather[(weather.index >= start_date) & (
@@ -146,7 +146,7 @@ def rad(bcp, albedo_sur, latitude, dt, WF, t_start, t_end):
 
     Φt = pd.DataFrame(Φt)
     # Interpolate weather data for time step dt
-    data = pd.concat([weather['temp_air'], Φt], axis=1)
+    data = pd.concat([weather['temp_air'], weather['relative_humidity'], Φt], axis=1)
     data = data.resample(str(dt) + 'S').interpolate(method='linear')
     data = data.rename(columns={'temp_air': 'To'})
 
@@ -609,14 +609,35 @@ def solver(TCAf, TCAc, TCAh, dt, u, u_c, t, Tisp, DeltaT, DeltaBlind, Kpc, Kph, 
     axs[0].legend(loc='upper right')
 
     # plot total solar radiation and HVAC heat flow
-    del rad_surf_tot['To']
     Φt = rad_surf_tot.sum(axis=1)
-    axs[1].plot(t / 3600, qHVAC, label='$q_{HVAC}$')
+    axs[1].plot(t / 3600, qHVAC, label='$q_{HVAC}$', linestyle='-', marker='o')
     axs[1].plot(t / 3600, Φt, label='$Φ_{total}$')
     axs[1].set(xlabel='Time [h]',
                ylabel='Heat flows [W]')
     axs[1].legend(loc='upper right')
-    plt.ylim(-1500, 6000)
+    plt.ylim(-1500, 20000)
     fig.tight_layout()
 
     plt.show()
+
+    return qHVAC
+
+def DSH(qHVAC, rad_surf_tot, Tisp):
+    qHVAC_diff = np.diff(qHVAC)
+    qHVAC_red = qHVAC
+    for i in range(0, qHVAC_diff.shape[0]):
+        a = int(qHVAC_diff[i])
+        if a in range(1, 5):
+            break
+        else:
+            qHVAC_red = np.delete(qHVAC_red, 0)
+
+    qHVAC_max = max(qHVAC_red)
+    qHVAC_max_n = np.where(qHVAC == qHVAC_max)
+    qHVAC_max_n = int(qHVAC_max_n[0])
+    To = rad_surf_tot.iloc[qHVAC_max_n, 0]
+    w0 = rad_surf_tot.iloc[qHVAC_max_n, 1]
+    qHVAC_bc = qHVAC_max / (Tisp - To)
+
+
+    return To, w0, qHVAC_bc

@@ -4,7 +4,19 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9e247da4-e2ca-49b4-b692-ba465640d2f0" name="Changes" comment="All element functions and updated main, element functions are now all in one file." />
+    <list default="true" id="9e247da4-e2ca-49b4-b692-ba465640d2f0" name="Changes" comment="All element functions and updated main, element functions are now all in one file.">
+      <change beforePath="$PROJECT_DIR$/.idea/DMBEM-project.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/DMBEM-project.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_10_11_2021_09_51__Changes_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_10_11_2021_09_51__Changes_.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_10_11_2021_09_55__Changes_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_10_11_2021_09_55__Changes_.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_rebase__Changes_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_rebase__Changes_.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Building Characteristics_large.csv" beforeDir="false" afterPath="$PROJECT_DIR$/Building Characteristics_large.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Model.pptx" beforeDir="false" afterPath="$PROJECT_DIR$/Model.pptx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Project_Report.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Project_Report.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TCM_funcs.py" beforeDir="false" afterPath="$PROJECT_DIR$/TCM_funcs.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -21,9 +33,7 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="file://$PROJECT_DIR$/t04.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/main.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/t04_test.py" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="ProjectId" id="20AzDwDBgbhO4eAOTdDkNprYoyo" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
@@ -34,8 +44,8 @@
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/main.py" />
-    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="settings.editor.selected.configurable" value="org.jetbrains.plugins.github.ui.GithubSettingsConfigurable" />
     <property name="two.files.diff.last.used.file" value="$PROJECT_DIR$/main.py" />
   </component>
   <component name="RunManager" selected="Python.main">
@@ -43,12 +53,9 @@
       <module name="DMBEM-project" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
+      <option name="SDK_HOME" value="C:\Users\Charlie\anaconda3\envs\dm4bem-env\python.exe" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
+      <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main.py" />
@@ -148,7 +155,14 @@
       <option name="project" value="LOCAL" />
       <updated>1636551373553</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="All element functions and updated main, element functions are now all in one file.">
+      <created>1637874062329</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1637874062329</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -171,19 +185,19 @@
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/TCM_funcs.py</url>
-          <line>531</line>
-          <option name="timeStamp" value="9" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/t04_test_roof.py</url>
           <line>458</line>
           <option name="timeStamp" value="10" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/TCM_funcs.py</url>
-          <line>525</line>
-          <option name="timeStamp" value="14" />
+          <line>620</line>
+          <option name="timeStamp" value="24" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/TCM_funcs.py</url>
+          <line>637</line>
+          <option name="timeStamp" value="32" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
