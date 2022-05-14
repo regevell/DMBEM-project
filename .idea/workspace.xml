@@ -4,16 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9e247da4-e2ca-49b4-b692-ba465640d2f0" name="Changes" comment="All element functions and updated main, element functions are now all in one file.">
-      <change beforePath="$PROJECT_DIR$/.idea/DMBEM-project.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/DMBEM-project.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_10_11_2021_09_51__Changes_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_10_11_2021_09_51__Changes_.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_10_11_2021_09_55__Changes_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_10_11_2021_09_55__Changes_.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_rebase__Changes_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_rebase__Changes_.xml" afterDir="false" />
+    <list default="true" id="9e247da4-e2ca-49b4-b692-ba465640d2f0" name="Changes" comment="Updated to include inputs for DSH function.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Building Characteristics_large.csv" beforeDir="false" afterPath="$PROJECT_DIR$/Building Characteristics_large.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Model.pptx" beforeDir="false" afterPath="$PROJECT_DIR$/Model.pptx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Project_Report.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Project_Report.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Building Characteristics_real.csv" beforeDir="false" afterPath="$PROJECT_DIR$/Building Characteristics_real.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/TCM_funcs.py" beforeDir="false" afterPath="$PROJECT_DIR$/TCM_funcs.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
@@ -44,11 +37,32 @@
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../New folder" />
     <property name="settings.editor.selected.configurable" value="org.jetbrains.plugins.github.ui.GithubSettingsConfigurable" />
     <property name="two.files.diff.last.used.file" value="$PROJECT_DIR$/main.py" />
   </component>
   <component name="RunManager" selected="Python.main">
+    <configuration name="TCM_funcs" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="DMBEM-project" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/TCM_funcs.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="DMBEM-project" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -133,6 +147,7 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.main" />
+        <item itemvalue="Python.TCM_funcs" />
         <item itemvalue="Python.t04_test_roof" />
         <item itemvalue="Python.t04_test" />
         <item itemvalue="Python.solid_wall_w_ins" />
@@ -162,7 +177,14 @@
       <option name="project" value="LOCAL" />
       <updated>1637874062329</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="Updated to include inputs for DSH function.">
+      <created>1651168574936</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1651168574936</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -179,7 +201,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="All element functions and updated main, element functions are now all in one file." />
-    <option name="LAST_COMMIT_MESSAGE" value="All element functions and updated main, element functions are now all in one file." />
+    <MESSAGE value="Updated to include inputs for DSH function." />
+    <option name="LAST_COMMIT_MESSAGE" value="Updated to include inputs for DSH function." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -191,13 +214,18 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/TCM_funcs.py</url>
-          <line>620</line>
-          <option name="timeStamp" value="24" />
+          <line>622</line>
+          <option name="timeStamp" value="34" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/TCM_funcs.py</url>
-          <line>637</line>
-          <option name="timeStamp" value="32" />
+          <line>639</line>
+          <option name="timeStamp" value="40" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/TCM_funcs.py</url>
+          <line>616</line>
+          <option name="timeStamp" value="41" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>

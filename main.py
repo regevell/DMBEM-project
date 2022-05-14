@@ -20,8 +20,8 @@ bc = TCM_funcs.building_characteristics()
 # Define Inputs
 Kpc = 500
 Kpf = 1e-3
-Kph = 1000
-dt = 20
+Kph = 6000
+dt = 400
 T_set = pd.DataFrame([{'cooling': 26, 'heating': 20}])                                                            # s - time step for solerT_set = pd.DataFrame([{'cooling': 26, 'heating': 20}])                        # C - temperature set points
 Tm = 20 + 273.15                                                              # K - Mean temperature for radiative exchange
 ACH = 1                                                                       # h*-1 - no. of air changes in volume per hour
@@ -35,8 +35,8 @@ Tisp = 20
 DeltaT = 5
 DeltaBlind = 2
 WF = 'GBR_ENG_RAF.Lyneham.037400_TMYx.2004-2018.epw'
-t_start = '2000-01-01 12:00:00'
-t_end = '2000-01-05 18:00:00'
+t_start = '2022-01-01 12:00:00'
+t_end = '2022-12-31 18:00:00'
 Tg = 10                                                                    # ground temperature
 IR_Surf = 7                                                                 # number of indoor radiation surfaces
 
@@ -126,4 +126,7 @@ TCAh = dm4bem.TCAss(TCd_h, AssX)
 
 qHVAC = TCM_funcs.solver(TCAf, TCAc, TCAh, dt, u, u_c, t, Tisp, DeltaT, DeltaBlind, Kpc, Kph, rad_surf_tot)
 
-To, w0, qHVAC_bc = TCM_funcs.DSH(qHVAC, rad_surf_tot, Tisp)
+qHVAC_bc_max, Qmax = TCM_funcs.DSH(qHVAC, rad_surf_tot, Tisp)
+
+print('Maximum building heat loss coefficient:', qHVAC_bc_max, 'W/K')
+print('Maximum building heat loss:', Qmax, 'kW')
